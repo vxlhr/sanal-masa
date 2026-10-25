@@ -20,3 +20,7 @@ _eski/
 *.log
 .DS_Store
 Thumbs.db
+
+# Paketleme ciktilari
+build/
+dist/

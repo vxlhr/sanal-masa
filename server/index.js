@@ -1,11 +1,10 @@
 // D&D Sanal Masa - sunucu
-// Kullanim: node server/index.js [--port=8080] [--dm=sifre] [--internet] [--nobrowser] [--data=klasor]
+// Kullanim: node server/index.js [--port=8080] [--dm=sifre] [--internet | --yerel] [--nobrowser] [--data=klasor]
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { exec } from "node:child_process";
-import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
 import { WebSocketServer } from "ws";
 import { Store, newId, newSecret, sceneView, chatVisible, normalize } from "./state.js";
@@ -13,12 +12,15 @@ import { createActions, ActionError } from "./actions.js";
 import { loadConfig } from "./config.js";
 import { startTunnel } from "./tunnel.js";
 import { Backups } from "./backup.js";
+import { IS_PACKAGED, ROOT, DATA_ROOT, readStatic, listStatic } from "./files.js";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const m = a.match(/^--([^=]+)(?:=(.*))?$/);
   return m ? [m[1], m[2] ?? true] : [a, true];
 }));
+// Indirilen tek dosyalik program: cift tiklayan cogunlukla baska aglardaki arkadaslariyla oynar,
+// bu yuzden internete acma varsayilan. Sadece ayni evde oynamak icin: --yerel
+if (IS_PACKAGED && !args.yerel) args.internet = true;
 
 const PORT = Number(args.port || process.env.PORT || 8080);
 const MAX_UPLOAD = 30 * 1024 * 1024;
@@ -27,10 +29,8 @@ const IMAGE_EXT = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif"]);
 const AUDIO_EXT = new Set([".mp3", ".ogg", ".wav", ".m4a", ".webm"]);
 
 const DIRS = {
-  public: path.join(ROOT, "public"),
-  assets: path.join(ROOT, "assets"),
-  uploads: path.join(ROOT, "uploads"),
-  data: args.data ? path.resolve(String(args.data)) : path.join(ROOT, "data"), // testler icin ayri kayit klasoru
+  uploads: path.join(DATA_ROOT, "uploads"),
+  data: args.data ? path.resolve(String(args.data)) : path.join(DATA_ROOT, "data"), // testler icin ayri kayit klasoru
 };
 for (const sub of ["maps", "tokens", "audio"]) fs.mkdirSync(path.join(DIRS.uploads, sub), { recursive: true });
 
@@ -59,9 +59,9 @@ function listImages(kind) {
   const out = [];
   const exts = kind === "audio" ? AUDIO_EXT : IMAGE_EXT;
   for (const base of ["assets", "uploads"]) {
-    const dir = path.join(DIRS[base], kind);
     let files = [];
-    try { files = fs.readdirSync(dir); } catch { continue; }
+    if (base === "assets") files = listStatic("assets", kind);
+    else try { files = fs.readdirSync(path.join(DIRS.uploads, kind)); } catch { continue; }
     for (const f of files) {
       if (!exts.has(path.extname(f).toLowerCase())) continue;
       out.push({ url: `/${base}/${kind}/${encodeURIComponent(f)}`, name: prettyName(f), uploaded: base === "uploads" });
@@ -259,6 +259,20 @@ function json(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
+/** public/ ve assets/ (paketli programda programin icinden) */
+function serveStatic(res, base, rel, cache) {
+  let decoded;
+  try { decoded = decodeURIComponent(rel); } catch { return json(res, 400, { error: "Geçersiz yol" }); }
+  const body = readStatic(base, decoded);
+  if (!body) return json(res, 404, { error: "Bulunamadı" });
+  res.writeHead(200, {
+    "Content-Type": MIME[path.extname(decoded).toLowerCase()] || "application/octet-stream",
+    "Content-Length": body.length,
+    "Cache-Control": cache ? "public, max-age=86400" : "no-cache",
+  });
+  res.end(body);
+}
+
 function serveFile(res, baseDir, rel, cache) {
   let decoded;
   try { decoded = decodeURIComponent(rel); } catch { return json(res, 400, { error: "Geçersiz yol" }); }
@@ -353,9 +367,9 @@ const server = http.createServer((req, res) => {
       iceServers: config.iceServers,
     });
   }
-  if (p.startsWith("/assets/")) return serveFile(res, DIRS.assets, p.slice(8), true);
+  if (p.startsWith("/assets/")) return serveStatic(res, "assets", p.slice(8), true);
   if (p.startsWith("/uploads/")) return serveFile(res, DIRS.uploads, p.slice(9), true);
-  return serveFile(res, DIRS.public, p === "/" ? "index.html" : p.slice(1), false);
+  return serveStatic(res, "public", p === "/" ? "index.html" : p.slice(1), false);
 });
 
 /* ------------------------------------------------------------------ */
@@ -461,11 +475,20 @@ server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
     console.error(`\n  [HATA] ${PORT} portu kullanimda. Masa zaten acik olabilir.`);
     console.error(`         Tarayicida http://localhost:${PORT} adresini dene.\n`);
+    if (IS_PACKAGED && !args.nobrowser) openBrowser(`http://localhost:${PORT}`);
   } else {
     console.error("\n  [HATA]", err.message);
   }
-  process.exit(1);
+  exitAfterKey(1);
 });
+
+/** Cift tiklanan programda pencere hemen kapanmasin, kullanici hatayi okuyabilsin */
+function exitAfterKey(code) {
+  if (!IS_PACKAGED || !process.stdin.isTTY) process.exit(code);
+  console.error("  Kapatmak icin Enter'a bas.");
+  process.stdin.resume();
+  process.stdin.once("data", () => process.exit(code));
+}
 
 server.listen(PORT, () => {
   console.log("");
@@ -475,6 +498,7 @@ server.listen(PORT, () => {
   console.log(`  Bu bilgisayardan : http://localhost:${PORT}`);
   for (const ip of lanAddresses()) console.log(`  Ayni evden (LAN) : http://${ip}:${PORT}`);
   console.log(`  DM sifresi       : ${DM_PASSWORD}   (degistirmek icin: ${path.relative(ROOT, config.file)})`);
+  if (IS_PACKAGED) console.log(`  Kayitlar         : ${DATA_ROOT}`);
   console.log("");
   console.log("  Kapatmak icin bu pencereyi kapat (veya Ctrl+C).");
   console.log("");
@@ -484,7 +508,7 @@ server.listen(PORT, () => {
     console.log("  Internete aciliyor (Cloudflare, hesap gerekmez)...");
     startTunnel({
       port: PORT,
-      toolsDir: path.join(ROOT, "tools"),
+      toolsDir: path.join(DATA_ROOT, "tools"),
       onUrl: (url) => {
         publicUrl = url;
         if (!url) return;

@@ -12,10 +12,23 @@
     "start": "node server/index.js",
     "internet": "node server/index.js --internet",
     "test:server": "node test/sunucu-testi.mjs && node test/ek-ozellik-testi.mjs",
-    "test:ui": "node test/arayuz-testi.mjs"
+    "test:ui": "node test/arayuz-testi.mjs",
+    "paketle": "node scripts/paketle.mjs"
   },
-  "keywords": ["dnd", "d&d", "virtual-tabletop", "vtt", "ttrpg", "dungeons-and-dragons", "turkce"],
+  "keywords": [
+    "dnd",
+    "d&d",
+    "virtual-tabletop",
+    "vtt",
+    "ttrpg",
+    "dungeons-and-dragons",
+    "turkce"
+  ],
   "dependencies": {
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "postject": "^1.0.0-alpha.6"
   }
 }

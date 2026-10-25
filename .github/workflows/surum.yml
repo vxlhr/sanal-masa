@@ -1,0 +1,77 @@
+# Yeni surum: "v3.1.0" gibi bir etiket gonderildiginde Windows, Mac ve Linux icin
+# tek dosyalik programlari uretir ve GitHub "Releases" sayfasina koyar.
+# Elle denemek icin: Actions sekmesi > "Surum" > "Run workflow" (sadece paketler, yayinlamaz).
+name: Surum
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - name: Sunucu testleri
+        run: |
+          node server/index.js --port=8099 --nobrowser --yerel --data=test/veri > sunucu.log 2>&1 &
+          sleep 2
+          node test/sunucu-testi.mjs
+          node test/ek-ozellik-testi.mjs
+
+  paketle:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: node scripts/paketle.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paket-${{ matrix.os }}
+          path: dist/*
+
+  yayinla:
+    needs: paketle
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          body: |
+            ## İndir ve çift tıkla
+
+            | Sistem | Dosya |
+            |---|---|
+            | **Windows** | `SanalMasa-Windows.exe` |
+            | **Mac** (M1/M2/M3/M4) | `SanalMasa-Mac-arm64.tar.gz` |
+            | **Linux** | `SanalMasa-Linux-x64.tar.gz` |
+
+            Programı açınca masa kendiliğinden internete bağlanır ve arkadaşlarına göndereceğin
+            `https://….trycloudflare.com` adresi pencerede ve masadaki **Davet et** düğmesinde çıkar.
+            Node.js, hesap ya da port açma gerekmez. DM şifresi pencerede yazar.
+
+            **Windows "bilgisayarınızı korudu" derse:** "Ek bilgi" → "Yine de çalıştır".
+            **Mac "doğrulanamadı" derse:** Sistem Ayarları → Gizlilik ve Güvenlik → "Yine de aç".
+
+            Kayıtlar programın yanındaki `SanalMasa-Veri` klasöründe durur. Programı bir klasöre koyup oradan aç.

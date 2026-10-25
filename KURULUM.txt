@@ -5,6 +5,11 @@
 Bu kurulumu SADECE DM (oyunu yoneten kisi) yapar.
 Oyuncular hicbir sey kurmaz, sadece gelen linke tiklar.
 
+EN KOLAYI: https://github.com/vxlhr/sanal-masa/releases/latest
+  adresinden SanalMasa-Windows.exe dosyasini indir, bir klasore koy,
+  cift tikla. Node.js bile gerekmez. Asagidaki adimlar, kaynak koddan
+  (ZIP ile) calistirmak isteyenler icindir.
+
 
 ---------------------------------------------------------------------
  1) TEK SEFERLIK: Node.js kur

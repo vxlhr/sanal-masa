@@ -29,25 +29,44 @@ DM kendi bilgisayarında çalıştırır, oyuncular gelen linke tıklar. Hesap, 
   <img src="docs/karakter-kagidi.png" width="49%" alt="Karakter kağıdı">
 </p>
 
-## Kurulum (sadece DM)
+## Kurulum (sadece DM) — indir, çift tıkla
 
-1. **[Node.js](https://nodejs.org)** kur ("LTS" sürümü). Bir kere yapılır.
-2. Bu projeyi indir: yeşil **Code → Download ZIP** düğmesi, sonra ZIP'i bir klasöre çıkar.
-3. Başlat:
+### ⬇️ [En son sürümü indir](https://github.com/vxlhr/sanal-masa/releases/latest)
 
-| | Arkadaşlar farklı evlerde | Herkes aynı evde |
+| Sistem | Dosya | Nasıl açılır |
 |---|---|---|
-| **Windows** | `INTERNETE-AC.bat` dosyasına çift tıkla | `BASLAT.bat` dosyasına çift tıkla |
-| **Mac / Linux** | Terminalde `bash internete-ac.sh` | `bash baslat.sh` |
+| **Windows** | `SanalMasa-Windows.exe` | Bir klasöre koy, çift tıkla |
+| **Mac** (M1–M4) | `SanalMasa-Mac-arm64.tar.gz` | Çift tıkla (açılır), çıkan `SanalMasa`'ya çift tıkla |
+| **Linux** | `SanalMasa-Linux-x64.tar.gz` | Çıkar, `./SanalMasa` |
 
-Pencerede şuna benzer bir adres çıkar: `https://kelime-kelime-kelime.trycloudflare.com`.
-Bu adresi arkadaşlarına gönder. Masadaki **Davet et** düğmesi de aynı adresi kopyalar.
+Hepsi bu kadar. **Node.js, hesap ya da port açma gerekmez.** Program açılınca:
+
+1. Tarayıcında masa açılır.
+2. Masa kendiliğinden internete bağlanır. Pencerede ve masadaki **Davet et** düğmesinde
+   `https://kelime-kelime-kelime.trycloudflare.com` gibi bir adres çıkar.
+3. Bu adresi arkadaşlarına gönder. Hangi şehirde, hangi ağda olurlarsa olsunlar bağlanırlar.
+
+**DM şifresi** pencerede yazar (ilk açılışta rastgele üretilir). Kayıtların, yedeklerin ve şifre ayarın
+programın yanındaki `SanalMasa-Veri` klasöründe durur; programı her zaman aynı klasörden aç.
+
+> **Windows "bilgisayarınızı korudu" derse:** "Ek bilgi" → "Yine de çalıştır". (Program imzalı değil;
+> imza için yıllık ücretli sertifika gerekiyor.)
+> **Mac "doğrulanamadı" derse:** Sistem Ayarları → Gizlilik ve Güvenlik → "Yine de aç".
 
 > İnternete açma işi Cloudflare'in **ücretsiz ve hesapsız** hızlı tüneliyle yapılır. Gereken program
-> (`cloudflared`) ilk açılışta kendiliğinden indirilir. Adres her açılışta değişir.
+> (`cloudflared`) ilk açılışta kendiliğinden indirilir. Adres her açılışta değişir, her oyun gecesi yenisini gönder.
+> Herkes aynı evdeyse ve internete açmak istemiyorsan programı `--yerel` ile başlatabilirsin.
 
-**DM şifresi** ilk açılışta rastgele üretilir ve siyah pencerede yazar.
-Değiştirmek için `data/ayarlar.json` dosyasındaki `dmSifresi` satırını düzenle.
+<details>
+<summary>Kaynak koddan çalıştırmak (Node.js ile)</summary>
+
+1. [Node.js](https://nodejs.org) (LTS) kur.
+2. **Code → Download ZIP** ile indir ve bir klasöre çıkar.
+3. Windows: `INTERNETE-AC.bat` (ya da aynı ev için `BASLAT.bat`).
+   Mac / Linux: `bash internete-ac.sh` (ya da `bash baslat.sh`).
+
+Bu şekilde kayıtlar proje içindeki `data/` klasöründe durur.
+</details>
 
 ## Oyuncular için
 
@@ -76,9 +95,10 @@ ağlarında bu engellenebilir. İleri düzey kullanıcılar `data/ayarlar.json` 
 TURN sunucusu ekleyebilir. Ayrıca sesli sohbet için `https` adresi (İnternete Aç) ya da `localhost` gerekir.
 
 **"Port kullanımda" hatası.** Masa zaten açık. Tarayıcıda `http://localhost:8080` adresine git.
-Başka bir port için: `BASLAT.bat --port=8090`.
+Başka bir port için programı `--port=8090` ile başlat.
 
-**Masayı sıfırlamak istiyorum.** Masayı kapat ve `data/masa.json` dosyasını sil. Yedekler `data/yedekler/` klasöründe.
+**Masayı sıfırlamak istiyorum.** Masayı kapat ve `SanalMasa-Veri/data/masa.json` dosyasını sil
+(kaynak koddan çalıştırıyorsan `data/masa.json`). Yedekler aynı yerdeki `yedekler/` klasöründe.
 
 **Güvenli mi?** Gizli tokenlar, sisteki ve görüş dışındaki düşmanlar, DM notları ve gizli zarlar sunucuda
 filtrelenir; oyuncunun tarayıcısına hiç ulaşmaz. DM şifresini kimseyle paylaşma.
@@ -104,6 +124,10 @@ npm run test:ui
 
 `--data` ile testler ayrı bir klasör kullanır, gerçek masaya dokunmaz. Tarayıcı testi Chrome ya da Edge ister.
 
+**Tek dosyalık program üretmek:** `node scripts/paketle.mjs` çalıştırdığın sistem için `dist/` altına program üretir.
+**Yeni sürüm yayınlamak:** `package.json` sürümünü artır, sonra `git tag v3.1.0 && git push --tags`.
+GitHub Actions Windows, Mac ve Linux programlarını üretip Releases sayfasına koyar.
+
 ---
 
 ### English
@@ -112,4 +136,5 @@ npm run test:ui
 Node.js; players just open a link. Features: dynamic lighting with walls and doors, fog of war, AoE templates,
 character sheets with clickable rolls, initiative tracker, built-in peer-to-peer voice chat, ambient sound,
 undo, automatic backups and one-click internet access via Cloudflare quick tunnels (no account needed).
+Download the single-file executable from Releases and double-click it — no Node.js required.
 Hidden information (hidden tokens, fogged enemies, DM notes) is filtered server-side.

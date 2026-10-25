@@ -26,7 +26,7 @@ let fails = 0;
 const ok = (cond, label) => { console.log((cond ? "  OK  " : "  FAIL") + " " + label); if (!cond) fails++; };
 
 const bad = await client({ t: "join", name: "X", asDm: true, password: "yanlis" });
-ok(bad.errors.includes("DM şifresi yanlış."), "wrong DM password rejected");
+ok(bad.errors.some((e) => e.startsWith("DM şifresi yanlış.")), "wrong DM password rejected");
 bad.ws.close();
 
 const dm = await client({ t: "join", name: "Usta", asDm: true, password: process.env.DM_PASSWORD || JSON.parse(fs.readFileSync((process.env.DATA || "test/veri") + "/ayarlar.json", "utf8")).dmSifresi });

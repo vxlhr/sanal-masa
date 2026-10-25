@@ -538,3 +538,4 @@ textarea.input { resize: vertical; min-height: 64px; }
   .zoombar { left: 10px; bottom: 10px; }
   .app:not(.side-closed) .token-card { bottom: calc(58vh + 8px); max-height: calc(42vh - 70px); }
 }
+.login-hint { margin: 6px 0 0; font-size: 12px; color: var(--muted); }

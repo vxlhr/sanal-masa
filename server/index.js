@@ -181,7 +181,9 @@ function join(client, m) {
     if (!name) throw new ActionError("Bir isim yaz.");
 
     if (m.asDm) {
-      if (m.password !== DM_PASSWORD) throw new ActionError("DM şifresi yanlış.");
+      if (m.password !== DM_PASSWORD) {
+        throw new ActionError("DM şifresi yanlış. Şifre, masayı açan bilgisayardaki siyah pencerede \"DM sifresi\" satırında yazar (ya da SanalMasa-Veri/data/ayarlar.json dosyasında).");
+      }
       player = d.players.find((p) => p.isDm) || null;
       if (player) player.name = name;
     } else {

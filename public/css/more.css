@@ -1,0 +1,102 @@
+/* ================================================================
+   Sesli sohbet, muzik, coklu secim, karakter kagidi ekleri, DM sekmesi
+   ================================================================ */
+
+/* ---------------- Sesli sohbet ---------------- */
+.voice-box { position: relative; display: flex; align-items: center; gap: 2px; }
+.voice-btn.on { background: rgba(92, 191, 117, .16); border-color: rgba(92, 191, 117, .5); color: #9be3b0; }
+.mute-btn.muted { color: var(--red); background: var(--red-soft); }
+.voice-pop {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 40;
+  width: 300px; padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow);
+}
+.voice-title { font: 700 14px var(--display); color: var(--gold); }
+.voice-row { display: grid; grid-template-columns: 1fr auto 80px; gap: 8px; align-items: center; padding: 4px 0; font-size: 13px; }
+.voice-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.voice-state { font-size: 11px; color: var(--muted); }
+.voice-state.connected { color: var(--green); }
+.voice-state.failed { color: var(--red); }
+.voice-row input[type="range"], .music-pill input[type="range"] { accent-color: var(--gold); width: 100%; }
+
+.pdot.in-voice { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px rgba(92, 191, 117, .45); }
+.pdot.speaking { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px #5cbf75, 0 0 14px #5cbf75; animation: speak .5s ease-in-out infinite alternate; }
+.pdot.voice-muted::before { content: "🔇"; position: absolute; top: -8px; right: -6px; font-size: 10px; }
+@keyframes speak { to { transform: scale(1.08); } }
+
+/* ---------------- Muzik ---------------- */
+.music-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 3px 6px 3px 12px; border-radius: 30px;
+  background: rgba(90, 160, 230, .12); border: 1px solid rgba(90, 160, 230, .35);
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.music-pill input[type="range"] { width: 70px; }
+.ambient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
+.ambient-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 4px; font-size: 12px; font-weight: 600;
+  background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); cursor: pointer;
+}
+.ambient-btn:hover { border-color: var(--line-2); }
+.ambient-btn.on { border-color: #5aa0e6; background: rgba(90, 160, 230, .14); }
+.amb-emoji { font-size: 20px; }
+
+/* ---------------- Coklu secim ---------------- */
+.sel-bar {
+  position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 16px;
+  background: rgba(23, 24, 30, .97); border: 1px solid var(--gold-2); border-radius: 12px; box-shadow: var(--shadow);
+  z-index: 7; white-space: nowrap;
+}
+
+/* ---------------- Token karti ekleri ---------------- */
+.sight { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.sight small { grid-column: 1 / -1; font-size: 11px; }
+.sight-field span { display: block; margin-bottom: 3px; font-size: 11px; font-weight: 600; color: var(--muted); }
+.sight-field .input { padding: 6px 8px; font-size: 13px; }
+.tc-notes { margin-top: 12px; }
+.tc-notes summary { cursor: pointer; font-size: 12px; font-weight: 600; color: var(--muted); }
+.tc-notes textarea { margin-top: 6px; font-size: 13px; }
+
+/* ---------------- Karakter kagidi ekleri ---------------- */
+.attack-row { display: grid; grid-template-columns: 1fr 70px 100px auto auto; gap: 6px; align-items: end; }
+.att-field span { display: block; margin-bottom: 2px; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+.attack-row .input { padding: 6px 8px; }
+.slots { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; }
+.slot-col { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; background: var(--raised); border: 1px solid var(--line); border-radius: 8px; }
+.slot-lvl { font-size: 11px; font-weight: 700; color: var(--muted); }
+.pips { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; min-height: 12px; }
+.pip { width: 11px; height: 11px; padding: 0; border-radius: 3px; border: 1.5px solid var(--gold); background: var(--gold); cursor: pointer; }
+.pip.used { background: transparent; border-color: var(--line-2); }
+.slot-max { width: 40px !important; padding: 2px !important; font-size: 12px; }
+.spell-row { display: grid; grid-template-columns: 90px 1fr auto auto; gap: 6px; align-items: center; }
+.spell-row .input { padding: 6px 8px; }
+
+/* ---------------- DM sekmesi ---------------- */
+.dm-notes { min-height: 120px; font-size: 13px; }
+.backup-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; max-height: 240px; overflow-y: auto; }
+.backup-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; background: var(--raised); border: 1px solid var(--line); border-radius: 8px; font-size: 12px; }
+
+.sum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sum-stat { display: flex; flex-direction: column; align-items: center; padding: 10px; background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); }
+.sum-stat b { font: 700 26px var(--display); color: var(--gold); }
+.sum-stat span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.sum-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sum-table th { text-align: left; font-size: 11px; color: var(--muted); padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.sum-table td { padding: 6px; border-bottom: 1px solid var(--line); }
+.sum-table .n20 { color: var(--green); font-weight: 700; }
+.sum-table .n1 { color: var(--red); font-weight: 700; }
+
+.stage.tool-wall #board, .stage.tool-template #board { cursor: crosshair; }
+
+@media (max-width: 1000px) {
+  .voice-btn span, .music-pill span { display: none; }
+}
+@media (max-width: 760px) {
+  .attack-row { grid-template-columns: 1fr 1fr; }
+  .slots { grid-template-columns: repeat(5, 1fr); }
+  .sel-bar { bottom: 110px; flex-wrap: wrap; white-space: normal; max-width: calc(100% - 20px); }
+  .voice-pop { position: fixed; top: 60px; left: 10px; right: 10px; width: auto; }
+}

@@ -1,0 +1,22 @@
+# Bagimliliklar ve indirilen araclar
+node_modules/
+tools/
+
+# Masanin kendi verisi (her DM'in kendi kaydi, sifresi ve yedekleri)
+data/
+uploads/maps/*
+uploads/tokens/*
+uploads/audio/*
+!uploads/*/.gitkeep
+
+# Test ciktilari
+test/veri/
+test/ekran/
+test/*.log
+
+# Eski surum
+_eski/
+
+*.log
+.DS_Store
+Thumbs.db

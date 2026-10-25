@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>D&amp;D Sanal Masa</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 1 30 9v14L16 31 2 23V9z' fill='%23c9a14a'/><text x='16' y='21' font-size='11' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23161310'>20</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/fx.css">
+<link rel="stylesheet" href="/css/extras.css">
+<link rel="stylesheet" href="/css/more.css">
+</head>
+<body>
+
+<!-- SVG ikonlar -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-select" viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.5L10 19z" fill="currentColor"/></symbol>
+    <symbol id="i-ruler" viewBox="0 0 24 24"><path d="M3 17 17 3l4 4L7 21zM7 13l2 2m1-5 2 2m1-5 2 2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20l1-5L16 4l4 4L9 19zM14 6l4 4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-ping" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8" fill="none"/></symbol>
+    <symbol id="i-fog" viewBox="0 0 24 24"><path d="M3 9h12M6 13h15M3 17h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17 9h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-sword" viewBox="0 0 24 24"><path d="M14 4h6v6L9 21l-3-3zM5 15l4 4M3 21l3-3" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M2.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.7 3 2.5 3.5 5.2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.7 8.4 2 12 2 12s3.5 7 10 7c1.9 0 3.5-.6 4.9-1.4M9.9 9.9a3 3 0 0 0 4.2 4.2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M15 4v16" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 7 4 12l5 5M4 12h11a5 5 0 0 1 0 10h-2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 16v4h16v-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-d20" viewBox="0 0 24 24"><path d="M12 2 21 7v10l-9 5-9-5V7z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="M12 2 7.5 9.5h9zM3 7l4.5 2.5L12 22l4.5-12.5L21 7M7.5 9.5 3 17m13.5-7.5L21 17" stroke="currentColor" stroke-width="1.1" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-eraser" viewBox="0 0 24 24"><path d="M8 20h12M4.5 15.5 14 6l5 5-8.5 8.5H8z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M7 4h11a2 2 0 0 1 0 4h-1v10a2 2 0 0 1-2 2H6a2 2 0 0 1 0-4h1zM7 16V4M9 9h5M9 12h5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-sheet" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-mic-off" viewBox="0 0 24 24"><path d="M15 10V6a3 3 0 0 0-5.7-1.3M9 9v2a3 3 0 0 0 4.5 2.6M5 11a7 7 0 0 0 11.3 5.5M19 11a7 7 0 0 1-.6 2.8M12 18v3M3 3l18 18" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-wall" viewBox="0 0 24 24"><path d="M3 5h18v14H3zM3 10h18M3 15h18M8 5v5M15 5v5M11 10v5M6 15v4M17 15v4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-template" viewBox="0 0 24 24"><path d="M4 20 12 4l8 16z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><circle cx="12" cy="15" r="2.5" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+
+<!-- ================= GIRIS ================= -->
+<div id="login" class="login">
+  <div class="login-card">
+    <div class="login-logo"><svg><use href="#i-d20"/></svg></div>
+    <h1>Sanal Masa</h1>
+    <p class="login-sub">Dungeons &amp; Dragons için çevrimiçi oyun masası</p>
+    <div class="login-feats">
+      <span>🎲 Efektli zarlar</span><span>🌫️ Savaş sisi</span><span>📜 Karakter kağıdı</span><span>⚔️ İnisiyatif</span>
+    </div>
+
+    <form id="loginForm" autocomplete="off">
+      <label class="lbl" for="loginName">Adın</label>
+      <input id="loginName" class="input big" maxlength="24" placeholder="örn. Thalion" required>
+
+      <label class="lbl">Rengin</label>
+      <div id="loginColors" class="swatches"></div>
+
+      <div id="dmBox" class="dm-box" hidden>
+        <label class="lbl" for="loginPass">DM şifresi</label>
+        <input id="loginPass" class="input big" type="password" maxlength="60" placeholder="••••••">
+      </div>
+
+      <p id="loginError" class="form-error" role="alert"></p>
+
+      <button id="loginBtn" class="btn primary block big" type="submit">Masaya Otur</button>
+      <button id="dmToggle" class="link-btn" type="button">Dungeon Master olarak gir</button>
+    </form>
+
+    <p id="loginInfo" class="login-info"></p>
+  </div>
+</div>
+
+<!-- ================= MASA ================= -->
+<div id="app" class="app" hidden>
+  <header class="topbar">
+    <div class="brand"><svg><use href="#i-d20"/></svg><span>Sanal Masa</span></div>
+    <div class="scene-title" id="sceneTitle">—</div>
+    <div id="combatPill" class="combat-pill" hidden>
+      <span class="pill-round">Tur <b id="combatRound">1</b></span>
+      <span class="pill-turn">Sıra: <b id="combatTurn">—</b></span>
+      <button id="pillNext" class="btn tiny gold" type="button" hidden>Sırayı bitir</button>
+    </div>
+    <div class="grow"></div>
+    <button id="handoutBtn" class="btn tiny gold" type="button" hidden title="DM'in gösterdiği görseli tekrar aç"><svg class="ico"><use href="#i-scroll"/></svg> Gösterilen görsel</button>
+    <div id="musicPill" class="music-pill" hidden></div>
+    <div class="voice-box">
+      <button id="voiceBtn" class="btn small voice-btn" type="button"><svg class="ico"><use href="#i-mic"/></svg><span>Sesli sohbet</span></button>
+      <button id="muteBtn" class="icon-btn mute-btn" type="button" hidden></button>
+      <div id="voicePop" class="voice-pop" hidden></div>
+    </div>
+    <div id="playerDots" class="player-dots"></div>
+    <button id="inviteBtn" class="btn small gold invite-btn" type="button" title="Arkadaşlarını davet et"><svg class="ico"><use href="#i-link"/></svg><span>Davet et</span></button>
+    <button id="helpBtn" class="icon-btn" type="button" title="Nasıl oynanır?"><svg><use href="#i-help"/></svg></button>
+    <div id="connDot" class="conn" title="Bağlantı"></div>
+    <button id="sideToggle" class="icon-btn" type="button" title="Paneli aç/kapat"><svg><use href="#i-panel"/></svg></button>
+    <button id="logoutBtn" class="icon-btn" type="button" title="Çıkış"><svg><use href="#i-logout"/></svg></button>
+  </header>
+
+  <main class="stage" id="stage">
+    <canvas id="board"></canvas>
+
+    <div id="emptyState" class="empty-state" hidden></div>
+
+    <!-- Arac cubugu -->
+    <div class="toolbar" id="toolbar">
+      <button class="tool active" data-tool="select" type="button" title="Seç ve taşı (V)"><svg><use href="#i-select"/></svg></button>
+      <button class="tool" data-tool="measure" type="button" title="Mesafe ölç (M)"><svg><use href="#i-ruler"/></svg></button>
+      <button class="tool" data-tool="draw" type="button" title="Çizim (D)"><svg><use href="#i-pen"/></svg></button>
+      <button class="tool" data-tool="ping" type="button" title="İşaret ver (P) — her araçta Alt+tık da çalışır"><svg><use href="#i-ping"/></svg></button>
+      <button class="tool" data-tool="template" type="button" title="Alan şablonu: Fireball, koni… (T)"><svg><use href="#i-template"/></svg></button>
+      <button class="tool dm-only" data-tool="fog" type="button" title="Savaş sisi (F)"><svg><use href="#i-fog"/></svg></button>
+      <button class="tool dm-only" data-tool="wall" type="button" title="Duvar, kapı ve görüş (W)"><svg><use href="#i-wall"/></svg></button>
+    </div>
+
+    <!-- Arac secenekleri -->
+    <div class="tool-options" id="opt-draw" hidden>
+      <div class="opt-title">Çizim</div>
+      <div id="drawColors" class="swatches small"></div>
+      <div class="seg" id="drawWidth">
+        <button type="button" data-w="2">İnce</button>
+        <button type="button" data-w="5" class="on">Orta</button>
+        <button type="button" data-w="10">Kalın</button>
+      </div>
+      <div class="seg">
+        <button type="button" id="drawModePen" class="on">Kalem</button>
+        <button type="button" id="drawModeErase"><svg class="ico"><use href="#i-eraser"/></svg> Silgi</button>
+      </div>
+      <button class="btn small block" type="button" id="drawClearMine">Çizimlerimi sil</button>
+      <button class="btn small block danger dm-only" type="button" id="drawClearAll">Tüm çizimleri sil</button>
+    </div>
+
+    <div class="tool-options" id="opt-fog" hidden>
+      <div class="opt-title">Savaş sisi</div>
+      <label class="switch"><input type="checkbox" id="fogEnabled"><span></span> Sis açık</label>
+      <p class="opt-hint">Haritada sürükleyerek alan seç.</p>
+      <div class="seg">
+        <button type="button" id="fogModeReveal" class="on">Göster</button>
+        <button type="button" id="fogModeHide">Gizle</button>
+      </div>
+      <div class="row2">
+        <button class="btn small" type="button" id="fogUndo"><svg class="ico"><use href="#i-undo"/></svg> Geri al</button>
+        <button class="btn small" type="button" id="fogRevealAll">Hepsini aç</button>
+      </div>
+      <button class="btn small block" type="button" id="fogHideAll">Her yeri kapat</button>
+    </div>
+
+    <div class="tool-options" id="opt-wall" hidden>
+      <div class="opt-title">Duvar ve görüş</div>
+      <label class="switch"><input type="checkbox" id="visionEnabled"><span></span> Dinamik görüş</label>
+      <label class="switch"><input type="checkbox" id="visionDark"><span></span> Karanlık (ışık gerekir)</label>
+      <p class="opt-hint">Görüş açıkken oyuncular sadece karakterlerinin gördüğünü görür. Işık ve karanlık görüş token kartından ayarlanır.</p>
+      <div class="seg">
+        <button type="button" id="wallModeWall" class="on">Duvar</button>
+        <button type="button" id="wallModeDoor">Kapı</button>
+        <button type="button" id="wallModeErase">Sil</button>
+      </div>
+      <label class="switch small"><input type="checkbox" id="wallSnap" checked><span></span> Izgaraya yapıştır</label>
+      <button class="btn small block danger" type="button" id="wallClear">Tüm duvarları sil</button>
+    </div>
+
+    <div class="tool-options" id="opt-template" hidden>
+      <div class="opt-title">Alan şablonu</div>
+      <div class="seg" id="templateShapes">
+        <button type="button" data-shape="circle" class="on">Daire</button>
+        <button type="button" data-shape="cone">Koni</button>
+        <button type="button" data-shape="line">Çizgi</button>
+        <button type="button" data-shape="square">Kare</button>
+      </div>
+      <p class="opt-hint">Sürükleyerek yerleştir. İçinde kalan hedef sayısı görünür. Örn. Fireball: 20 ft daire.</p>
+      <button class="btn small block" type="button" id="templateClear">Şablonlarımı sil</button>
+    </div>
+
+    <div class="tool-options" id="opt-measure" hidden>
+      <div class="opt-title">Ölçüm</div>
+      <p class="opt-hint">Sürükleyerek ölç. Herkes görür. 1 kare = 5 ft.</p>
+    </div>
+
+    <!-- Zoom -->
+    <div class="zoombar">
+      <button class="icon-btn" data-zoom="out" type="button" title="Uzaklaş"><svg><use href="#i-minus"/></svg></button>
+      <span id="zoomLabel">100%</span>
+      <button class="icon-btn" data-zoom="in" type="button" title="Yakınlaş"><svg><use href="#i-plus"/></svg></button>
+      <button class="icon-btn" data-zoom="fit" type="button" title="Haritayı sığdır"><svg><use href="#i-fit"/></svg></button>
+    </div>
+
+    <!-- Secili token karti -->
+    <div id="tokenCard" class="token-card" hidden></div>
+
+    <div id="hint" class="stage-hint" hidden></div>
+
+    <div id="reactBar" class="react-bar" title="Tepki gönder"></div>
+
+    <div id="selBar" class="sel-bar" hidden></div>
+  </main>
+
+  <aside class="sidebar" id="sidebar">
+    <nav class="tabs">
+      <button class="tab active" data-tab="chat" type="button"><svg><use href="#i-chat"/></svg><span>Sohbet</span><i id="chatBadge" class="badge" hidden></i></button>
+      <button class="tab" data-tab="combat" type="button"><svg><use href="#i-sword"/></svg><span>Savaş</span></button>
+      <button class="tab" data-tab="tokens" type="button"><svg><use href="#i-users"/></svg><span id="tokensTabLabel">Karakter</span></button>
+      <button class="tab dm-only" data-tab="scenes" type="button"><svg><use href="#i-map"/></svg><span>Haritalar</span></button>
+      <button class="tab dm-only" data-tab="dm" type="button"><svg><use href="#i-scroll"/></svg><span>DM</span></button>
+    </nav>
+
+    <section class="panel active" id="panel-chat">
+      <div id="chatLog" class="chat-log"></div>
+      <div class="dice-tray">
+        <div class="dice-row" id="diceRow"></div>
+        <div class="dice-opts">
+          <div class="stepper" title="Kaç zar">
+            <button type="button" id="diceCountDown">−</button><span id="diceCount">1</span><button type="button" id="diceCountUp">+</button>
+          </div>
+          <div class="stepper" title="Bonus">
+            <button type="button" id="diceModDown">−</button><span id="diceMod">+0</span><button type="button" id="diceModUp">+</button>
+          </div>
+          <div class="seg compact" id="advSeg" title="d20 için avantaj / dezavantaj">
+            <button type="button" data-adv="dis">Dez.</button>
+            <button type="button" data-adv="" class="on">Normal</button>
+            <button type="button" data-adv="adv">Avt.</button>
+          </div>
+          <label class="switch small" title="Atışı sadece DM görür"><input type="checkbox" id="diceSecret"><span></span>Gizli</label>
+          <button type="button" id="soundBtn" class="sound-btn" title="Zar seslerini aç/kapat">Ses</button>
+        </div>
+      </div>
+      <form class="chat-form" id="chatForm" autocomplete="off">
+        <input id="chatInput" class="input" maxlength="500" placeholder="Mesaj yaz… (/r 2d6+3 ile zar at)">
+        <button class="btn primary" type="submit">Gönder</button>
+      </form>
+    </section>
+
+    <section class="panel" id="panel-combat"></section>
+    <section class="panel" id="panel-tokens"></section>
+    <section class="panel" id="panel-scenes"></section>
+    <section class="panel" id="panel-dm"></section>
+  </aside>
+</div>
+
+<!-- Pencere (gorsel secici vb.) -->
+<div id="modal" class="modal" hidden>
+  <div class="modal-box">
+    <header class="modal-head"><h2 id="modalTitle"></h2><button class="icon-btn" id="modalClose" type="button"><svg><use href="#i-x"/></svg></button></header>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- DM'in oyunculara gosterdigi gorsel -->
+<div id="handout" class="handout" hidden></div>
+
+<div id="toasts" class="toasts"></div>
+
+<script type="module" src="/js/main.js"></script>
+</body>
+</html>

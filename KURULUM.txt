@@ -1,0 +1,65 @@
+=====================================================================
+  SANAL MASA - KURULUM (2 dakika)
+=====================================================================
+
+Bu kurulumu SADECE DM (oyunu yoneten kisi) yapar.
+Oyuncular hicbir sey kurmaz, sadece gelen linke tiklar.
+
+
+---------------------------------------------------------------------
+ 1) TEK SEFERLIK: Node.js kur
+---------------------------------------------------------------------
+   https://nodejs.org  adresine gir, "LTS" yazan dugmeye bas,
+   indirilen dosyayi kur (hep "Next" de). Zaten varsa bu adimi atla.
+
+
+---------------------------------------------------------------------
+ 2) OYUN GECESI: Arkadaslar farkli evlerdeyse
+---------------------------------------------------------------------
+   Windows   : INTERNETE-AC.bat  dosyasina cift tikla.
+   Mac/Linux : Terminalde  bash internete-ac.sh
+
+   - Ilk seferde gerekli dosyalari kendisi indirir (biraz bekle).
+   - Tarayicin kendiliginden acilir. Acilmazsa: http://localhost:8080
+   - Siyah pencerede  https://....trycloudflare.com  adresi cikar.
+     Masadaki "Davet et" dugmesi de bu adresi kopyalar.
+     Bu adresi WhatsApp / Discord'dan arkadaslarina gonder.
+   - Siyah pencereyi KAPATMA. Kapatirsan oyun kapanir.
+   - Adres her acilista degisir, her oyun gecesi yenisini gonder.
+   - Hesap acmana, port acmana gerek YOK.
+
+
+---------------------------------------------------------------------
+ 3) Herkes ayni evdeyse
+---------------------------------------------------------------------
+   Windows   : BASLAT.bat
+   Mac/Linux : bash baslat.sh
+   Siyah pencerede yazan "Ayni evden (LAN)" adresini paylas.
+   Not: sesli sohbet bu adreste calismaz (tarayicilar https ister).
+   Sesli sohbet istiyorsan 2. adimdaki yontemi kullan.
+
+
+---------------------------------------------------------------------
+ GIRIS
+---------------------------------------------------------------------
+   DM       : Adini yaz, "Dungeon Master olarak gir"e bas.
+              Sifre siyah pencerede yazar.
+              Degistirmek icin: data\ayarlar.json  ->  "dmSifresi"
+   Oyuncu   : Adini yaz, renk sec, "Masaya otur".
+
+   Cikis yaptiysan AYNI ISIMLE tekrar gir, karakterin seni bekliyor.
+
+
+---------------------------------------------------------------------
+ SORUN OLURSA
+---------------------------------------------------------------------
+   "portu kullanimda"       -> Masa zaten acik. Tarayicida
+                               http://localhost:8080 adresine git.
+   "Node.js bulunamadi"     -> 1. adimi yap, bilgisayari yeniden baslat.
+   Arkadasin baglanamiyor   -> Siyah pencere acik mi? Adres https ile
+                               mi basliyor?
+   Sesli sohbet calismiyor  -> Mikrofon iznini ver. Bazi okul/is aglari
+                               engelleyebilir.
+   Bir seyi yanlislikla     -> Ctrl+Z ile geri al. Daha eskisi icin:
+   bozdum                      DM sekmesi > Yedekler > Geri yukle.
+   Sifirdan baslamak        -> Masayi kapat, data\masa.json dosyasini sil.

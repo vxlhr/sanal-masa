@@ -1,0 +1,21 @@
+{
+  "name": "sanal-masa",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Tarayicidan oynanan, kurulumu kolay cevrimici D&D masasi (virtual tabletop): harita, sis, gorus, zar, sesli sohbet.",
+  "type": "module",
+  "main": "server/index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "internet": "node server/index.js --internet",
+    "test:server": "node test/sunucu-testi.mjs && node test/ek-ozellik-testi.mjs",
+    "test:ui": "node test/arayuz-testi.mjs"
+  },
+  "keywords": ["dnd", "d&d", "virtual-tabletop", "vtt", "ttrpg", "dungeons-and-dragons", "turkce"],
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

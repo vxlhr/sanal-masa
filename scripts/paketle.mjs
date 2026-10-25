@@ -63,7 +63,8 @@ run(process.execPath, ["--experimental-sea-config", path.join(BUILD, "sea-config
 
 // 3) Node programinin kopyasina enjekte et
 console.log("3/4 Program olusturuluyor...");
-const exe = path.join(BUILD, exeName);
+fs.mkdirSync(path.join(BUILD, "program"), { recursive: true });
+const exe = path.join(BUILD, "program", exeName);
 fs.copyFileSync(process.execPath, exe);
 if (process.platform === "darwin") run("codesign", ["--remove-signature", exe]);
 if (process.platform === "win32") removeWindowsSignature(exe);
@@ -83,12 +84,13 @@ if (process.platform === "win32") {
   fs.copyFileSync(exe, out);
 } else {
   // Mac / Linux: calistirma izni korunsun diye tar.gz
-  const folder = path.join(BUILD, "SanalMasa");
+  const stage = path.join(BUILD, "paket");
+  const folder = path.join(stage, "SanalMasa");
   fs.mkdirSync(folder, { recursive: true });
   fs.copyFileSync(exe, path.join(folder, exeName));
   fs.chmodSync(path.join(folder, exeName), 0o755);
   out = path.join(DIST, `SanalMasa-${platform}-${arch}.tar.gz`);
-  run("tar", ["-czf", out, "-C", BUILD, "SanalMasa"]);
+  run("tar", ["-czf", out, "-C", stage, "SanalMasa"]);
 }
 const mb = (fs.statSync(out).size / 1024 / 1024).toFixed(1);
 console.log(`\nHazir: ${path.relative(ROOT, out)} (${mb} MB)`);

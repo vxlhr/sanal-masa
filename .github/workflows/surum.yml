@@ -46,11 +46,11 @@ jobs:
         run: |
           if [ "$RUNNER_OS" = "Windows" ]; then EXE=build/program/SanalMasa.exe; else EXE=build/program/SanalMasa; fi
           "$EXE" --yerel --nobrowser --port=8097 > duman.log 2>&1 &
-          for i in $(seq 1 30); do sleep 1; curl -sf localhost:8097/api/info > /dev/null && break; done
+          for i in $(seq 1 30); do sleep 1; curl -sf -o duman.tmp localhost:8097/api/info && break; done
           cat duman.log
-          curl -sf localhost:8097/ > /dev/null
-          curl -sf localhost:8097/js/main.js > /dev/null
-          curl -sf localhost:8097/assets/maps/ballroom.jpeg > /dev/null
+          curl -sf -o duman.tmp localhost:8097/
+          curl -sf -o duman.tmp localhost:8097/js/main.js
+          curl -sf -o duman.tmp localhost:8097/assets/maps/ballroom.jpeg
           grep -q "DM sifresi" duman.log
           echo "Program calisiyor."
       - uses: actions/upload-artifact@v4

@@ -1,12 +1,9 @@
 // Zar efektleri: donen zar, dogal 20 kutlamasi, dogal 1 felaketi.
 // Tum sesler Web Audio ile uretilir, dis dosya gerekmez.
 import { h } from "./util.js";
-
-const SOUND_KEY = "sanalmasa.ses";
+import { soundSettings } from "./sound.js";
 
 let audio = null;
-let soundOn = true;
-try { soundOn = localStorage.getItem(SOUND_KEY) !== "0"; } catch { /* yok */ }
 
 // Tarayicilar sesi ancak ilk tiklamadan sonra acar
 function ac() {
@@ -20,13 +17,6 @@ function ac() {
 }
 window.addEventListener("pointerdown", () => ac(), { once: true });
 
-export const sound = {
-  get on() { return soundOn; },
-  set on(v) {
-    soundOn = !!v;
-    try { localStorage.setItem(SOUND_KEY, soundOn ? "1" : "0"); } catch { /* yok */ }
-  },
-};
 
 /* ================================================================ */
 /* Ses sentezi                                                       */
@@ -35,7 +25,7 @@ export const sound = {
 function master(ctx, volume) {
   const comp = ctx.createDynamicsCompressor();
   const g = ctx.createGain();
-  g.gain.value = volume;
+  g.gain.value = volume * soundSettings.level("fx");
   g.connect(comp);
   comp.connect(ctx.destination);
   return g;
@@ -169,7 +159,7 @@ const SOUNDS = {
 export function playSound(name) { play(name); }
 
 function play(name) {
-  if (!soundOn) return;
+  if (!soundSettings.level("fx")) return;
   const ctx = ac();
   if (!ctx) return;
   try { SOUNDS[name](ctx); } catch { /* ses calinamazsa sessiz devam */ }

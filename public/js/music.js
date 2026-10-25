@@ -1,6 +1,7 @@
 // Ortam sesi ve muzik: DM baslatir, herkeste calar. Hazir ortam sesleri Web Audio ile uretilir,
 // DM kendi MP3/OGG dosyasini da yukleyip calabilir. Ses duzeyi herkesin kendi ayaridir.
-import { h, $, toast } from "./util.js";
+import { toast } from "./util.js";
+import { soundSettings } from "./sound.js";
 
 export const AMBIENT = [
   { key: "rain", name: "Yağmur", emoji: "🌧️" },
@@ -12,17 +13,15 @@ export const AMBIENT = [
   { key: "forest", name: "Orman", emoji: "🌲" },
 ];
 
-const VOL_KEY = "sanalmasa.muzik";
 
 export function createMusic(app) {
   let ctx = null;
   let master = null;
   let current = null; // { key, stop() }
   let fileAudio = null;
-  let volume = 0.5;
-  try { volume = Number(localStorage.getItem(VOL_KEY) ?? 0.5); } catch { /* yok */ }
-
-  const pill = $("#musicPill");
+  let volume = soundSettings.level("music");
+  let currentMusic = null;
+  soundSettings.onChange(() => setVolume(soundSettings.level("music")));
 
   function audio() {
     if (!ctx) {
@@ -259,24 +258,17 @@ export function createMusic(app) {
 
   function setVolume(v) {
     volume = v;
-    try { localStorage.setItem(VOL_KEY, String(v)); } catch { /* yok */ }
     if (master) master.gain.setTargetAtTime(v, ctx.currentTime, 0.05);
     if (fileAudio) fileAudio.volume = v;
   }
 
   function renderPill(m) {
-    pill.hidden = !m;
-    if (!m) return;
-    const amb = AMBIENT.find((a) => a.key === m.track);
-    const label = m.kind === "ambient" ? `${amb.emoji} ${amb.name}` : `🎵 ${m.name || "Müzik"}`;
-    pill.replaceChildren(
-      h("span", label),
-      h("input", { type: "range", min: 0, max: 1, step: 0.05, value: volume, title: "Ses düzeyi (sadece sende)", onInput: (e) => setVolume(Number(e.target.value)) }),
-      app.state && app.state.you.isDm ? h("button.icon-btn.sm", { type: "button", title: "Herkes için durdur", onClick: () => app.send({ t: "music.stop" }) }, "■") : null);
+    currentMusic = m;
+    if (app.onMusicChange) app.onMusicChange(m);
   }
 
   return {
     onState(st) { sync(st.music); },
-    get volume() { return volume; },
+    get current() { return currentMusic; },
   };
 }

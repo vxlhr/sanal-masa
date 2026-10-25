@@ -2,6 +2,7 @@
 import { h, $, icon, stableRender, KIND_LABEL, toast, nameFromUrl } from "./util.js";
 import { openModal, closeModal, imageGrid } from "./picker.js";
 import { MONSTERS } from "./data.js";
+import { openTokenMaker } from "./tokenmaker.js";
 
 const SIZES = [
   { v: 0.5, label: "Minik" },
@@ -73,7 +74,7 @@ export function createPanels(app) {
             : h("span.ro", e.init ?? "–");
           list.append(h("div.init-row", {
             class: [c.active && c.currentTokenId === t.id ? "current" : "", t.hidden ? "is-hidden" : ""].join(" "),
-            onClick: () => { app.board.select(t.id); app.board.centerOn(t); },
+            onClick: () => { app.openCard(t.id); app.board.centerOn(t); },
           },
           h("div.init-score", score),
           h("div.init-pic", { style: { backgroundImage: t.img ? `url("${t.img}")` : "", borderColor: t.color } }),
@@ -127,7 +128,7 @@ export function createPanels(app) {
     const owner = t.ownerId && st.players.find((p) => p.id === t.ownerId);
     return h("div.list-row", {
       class: [t.id === app.board.selectedId ? "selected" : "", t.hidden ? "is-hidden" : ""].join(" "),
-      onClick: () => { app.board.select(t.id); app.board.centerOn(t); },
+      onClick: () => { app.openCard(t.id); app.board.centerOn(t); },
     },
     h("div.pic", { style: { backgroundImage: t.img ? `url("${t.img}")` : "", borderColor: t.color } }),
     h("div.nm", t.name, h("small", [KIND_LABEL[t.kind] || "", owner ? ` · ${owner.name}` : "", hpText(t) ? ` · ${hpText(t)}` : ""].join(""))),
@@ -148,7 +149,9 @@ export function createPanels(app) {
       const out = [];
       if (!s) out.push(h("div.empty-note", "Aktif sahne yok."));
       else if (me.isDm) {
-        out.push(h("button.btn.primary.block", { type: "button", onClick: () => openAddToken(st) }, icon("plus", "ico"), "Token ekle"));
+        out.push(h("div.row2",
+          h("button.btn.primary", { type: "button", onClick: () => openAddToken(st) }, icon("plus", "ico"), "Token ekle"),
+          h("button.btn.gold", { type: "button", onClick: () => openMaker(st) }, "🎨 Token yapıcı")));
         out.push(h("div.section-title", `Bu sahnedeki tokenlar (${s.tokens.length})`));
         out.push(s.tokens.length
           ? h("div.list", s.tokens.map((t) => tokenRow(t, st)))
@@ -160,6 +163,8 @@ export function createPanels(app) {
         else out.push(h("div.empty-note", "Haritada henüz bir karakterin yok."));
         out.push(h("button.btn.primary.block", { type: "button", style: { marginTop: "10px" }, onClick: () => openAddToken(st) },
           icon("plus", "ico"), mine.length ? "Bir token daha ekle" : "Karakterimi haritaya koy"));
+        out.push(h("button.btn.gold.block", { type: "button", style: { marginTop: "6px" }, onClick: () => openMaker(st) },
+          "🎨 Kendi resminden token yap"));
         const others = s.tokens.filter((t) => t.ownerId !== me.id);
         if (others.length) {
           out.push(h("div.section-title", "Haritada görünenler"));
@@ -208,13 +213,18 @@ export function createPanels(app) {
     ];
   }
 
-  function openAddToken(st) {
+  /** Token yapicidan cikan resimle dogrudan token ekleme penceresini ac */
+  function openMaker(st) {
+    openTokenMaker({ secret: app.secret, name: st.you.isDm ? "" : st.you.name, onDone: (url, name) => openAddToken(app.state, { img: url, name }) });
+  }
+
+  function openAddToken(st, preset = {}) {
     const me = st.you;
-    const form = { img: null, name: me.isDm ? "" : me.name, kind: me.isDm ? "monster" : "pc", size: 1, maxHp: "", ac: "", initMod: "", hidden: false, ownerId: "" };
+    const form = { img: preset.img || null, name: preset.name || (me.isDm ? "" : me.name), kind: me.isDm ? "monster" : "pc", size: 1, maxHp: "", ac: "", initMod: "", hidden: false, ownerId: "" };
 
     const nameIn = h("input.input", { maxLength: 40, value: form.name, placeholder: me.isDm ? "örn. Goblin" : "Karakter adı" });
     const grid = imageGrid({
-      kind: "tokens", secret: app.secret, allowNone: true, selected: null,
+      kind: "tokens", secret: app.secret, allowNone: true, selected: form.img,
       onPick: (url, label) => {
         form.img = url;
         autoName(nameIn, url, label);

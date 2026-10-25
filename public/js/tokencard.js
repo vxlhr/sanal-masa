@@ -21,7 +21,7 @@ export function createTokenCard(app) {
     const id = app.board.selectedId;
     if (id !== lastId) { lastId = id; condsOpen = false; }
     // Coklu secimde kart yerine alttaki toplu islem cubugu gosterilir
-    const t = s && id && app.board.selectedIds.length < 2 && s.tokens.find((x) => x.id === id);
+    const t = s && id && app.cardId === id && app.board.selectedIds.length < 2 && s.tokens.find((x) => x.id === id);
     if (!t) { el.hidden = true; el._key = null; el.replaceChildren(); return; }
     el.hidden = false;
 
@@ -47,7 +47,7 @@ export function createTokenCard(app) {
             h("span.tag", KIND_LABEL[t.kind] || ""),
             owner ? h("span", owner.name) : null,
             t.hidden ? h("span.tag.hidden-tag", "Oyunculardan gizli") : null)),
-        h("button.icon-btn", { type: "button", title: "Kapat (Esc)", onClick: () => app.board.select(null) }, icon("x")));
+        h("button.icon-btn", { type: "button", title: "Kapat (Esc)", onClick: () => app.closeCard() }, icon("x")));
 
       // HP
       let hp;

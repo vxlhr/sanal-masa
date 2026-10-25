@@ -45,6 +45,11 @@ export function createBoard({ canvas, stage, app }) {
   let wallChain = null; // [x,y,...] duvar cizimi
   let hoverPoint = null;
   let templateDraft = null;
+  let selectedTplId = null;
+  let tplDrag = null;
+  const tplMoves = new Map(); // sablon id -> {x, y} (sunucu onayi gelene kadar)
+  let lastTap = { id: null, t: 0 };
+  const lastWorld = { x: 0, y: 0 };
 
   const remoteDrags = new Map();
   const pendingMoves = new Map();
@@ -190,13 +195,30 @@ export function createBoard({ canvas, stage, app }) {
     return best;
   }
 
-  function hitTemplate(mx, my) {
+  /** Sablonun ekranda gosterilecek hali (suruklenirken yerel konum) */
+  function tplView(t) {
+    const mv = tplMoves.get(t.id);
+    return mv ? { ...t, x: mv.x, y: mv.y } : t;
+  }
+
+  const canEditTpl = (t) => !!you() && (you().isDm || t.ownerId === you().id);
+
+  function hitTemplate(mx, my, editableOnly) {
     const s = scene();
     if (!s) return null;
     for (let i = s.templates.length - 1; i >= 0; i--) {
-      if (inTemplate(s.templates[i], grid().size, mx, my)) return s.templates[i];
+      const t = s.templates[i];
+      if (editableOnly && !canEditTpl(t)) continue;
+      if (inTemplate(tplView(t), grid().size, mx, my)) return t;
     }
     return null;
+  }
+
+  function selectTemplate(id) {
+    if (selectedTplId === id) return;
+    selectedTplId = id;
+    if (app.onTemplateSelect) app.onTemplateSelect(id);
+    requestRender();
   }
 
   /* ------------------------------------------------------------ */
@@ -372,7 +394,7 @@ export function createBoard({ canvas, stage, app }) {
   /* ---------------- Sablonlar ---------------- */
 
   function drawTemplates(s) {
-    for (const t of s.templates) drawTemplate(t, false);
+    for (const t of s.templates) drawTemplate(tplView(t), false);
   }
 
   function drawTemplate(t, draft) {
@@ -390,6 +412,15 @@ export function createBoard({ canvas, stage, app }) {
     }
     ctx.fill();
     ctx.stroke();
+    if (t.id && t.id === selectedTplId) {
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2.5 * u;
+      ctx.setLineDash([8 * u, 5 * u]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.arc(t.x, t.y, 5 * u, 0, Math.PI * 2); ctx.fill();
+    }
 
     // Etiket: boyut ve icindeki hedef sayisi
     const s = scene();
@@ -826,7 +857,7 @@ export function createBoard({ canvas, stage, app }) {
 
   function cancelActions() {
     if (drag) { drag = null; sendDrag.cancel(); }
-    stroke = null; fogRect = null; erasing = false; box = null; templateDraft = null;
+    stroke = null; fogRect = null; erasing = false; box = null; templateDraft = null; tplDrag = null;
     if (measureLocal) { measureLocal = null; sendMeasure.cancel(); app.send({ t: "measure", line: null }); }
     pan = null;
     setStageClass("dragging", false);
@@ -869,7 +900,25 @@ export function createBoard({ canvas, stage, app }) {
 
     if (tool === "select") {
       const t = hitToken(m.x, m.y);
+      // Senin tasiyamadigin bir tokenin altinda kendi sablonun varsa sablonu tut
+      const tplUnder = (!t || !canControl(t)) && !e.shiftKey ? hitTemplate(m.x, m.y, true) : null;
+      if (tplUnder) {
+        select(null);
+        selectTemplate(tplUnder.id);
+        const v = tplView(tplUnder);
+        tplDrag = { id: tplUnder.id, offX: m.x - v.x, offY: m.y - v.y, ox: tplUnder.x, oy: tplUnder.y, sx: e.clientX, sy: e.clientY, moved: false };
+        return;
+      }
       if (t) {
+        selectTemplate(null);
+        // Cift tik (ya da cift dokunus): ayrinti kartini ac
+        const now = performance.now();
+        if (lastTap.id === t.id && now - lastTap.t < 380) {
+          lastTap = { id: null, t: 0 };
+          app.openCard(t.id);
+          return;
+        }
+        lastTap = { id: t.id, t: now };
         const additive = e.shiftKey || e.ctrlKey || e.metaKey;
         if (additive) { select(t.id, true); return; }
         if (!selectedIds.has(t.id)) select(t.id);
@@ -895,6 +944,15 @@ export function createBoard({ canvas, stage, app }) {
       }
       const door = hitWall(m.x, m.y, true);
       if (door) { app.send({ t: "door.toggle", id: door.id }); return; }
+      const tpl = hitTemplate(m.x, m.y, true);
+      if (tpl && !e.shiftKey) {
+        select(null);
+        selectTemplate(tpl.id);
+        const v = tplView(tpl);
+        tplDrag = { id: tpl.id, offX: m.x - v.x, offY: m.y - v.y, ox: tpl.x, oy: tpl.y, sx: e.clientX, sy: e.clientY, moved: false };
+        return;
+      }
+      selectTemplate(null);
       if (e.shiftKey) {
         box = { x1: m.x, y1: m.y, x2: m.x, y2: m.y };
       } else {
@@ -924,11 +982,11 @@ export function createBoard({ canvas, stage, app }) {
         if (wallOpts.mode === "door") finishWall(); // kapi tek parca
       }
     } else if (tool === "template") {
-      const own = hitTemplate(m.x, m.y);
+      const own = hitTemplate(m.x, m.y, true);
       const g = grid();
       const origin = templateOpts.shape === "circle" || templateOpts.shape === "square"
         ? snapCorner(m.x, m.y) : cellCenter(m.x, m.y);
-      templateDraft = { shape: templateOpts.shape, x: origin.x, y: origin.y, angle: 0, size: 5, color: you().color, sx: e.clientX, sy: e.clientY, hit: own, g };
+      templateDraft = { shape: templateOpts.shape, x: origin.x, y: origin.y, angle: 0, size: 5, color: templateOpts.color || you().color, sx: e.clientX, sy: e.clientY, hit: own, g };
     }
     requestRender();
   });
@@ -948,6 +1006,19 @@ export function createBoard({ canvas, stage, app }) {
     }
 
     const m = toMap(e.clientX, e.clientY);
+    lastWorld.x = m.x; lastWorld.y = m.y;
+
+    if (tplDrag) {
+      if (!tplDrag.moved && Math.hypot(e.clientX - tplDrag.sx, e.clientY - tplDrag.sy) > 4) {
+        tplDrag.moved = true;
+        setStageClass("dragging", true);
+      }
+      if (tplDrag.moved) {
+        tplMoves.set(tplDrag.id, { x: m.x - tplDrag.offX, y: m.y - tplDrag.offY, ts: Date.now() });
+        requestRender();
+      }
+      return;
+    }
 
     if (pan) {
       view.x = pan.vx + (e.clientX - pan.sx);
@@ -1021,6 +1092,17 @@ export function createBoard({ canvas, stage, app }) {
 
     if (pan) { pan = null; setStageClass("panning", false); }
 
+    if (tplDrag) {
+      const d = tplDrag;
+      tplDrag = null;
+      setStageClass("dragging", false);
+      const mv = tplMoves.get(d.id);
+      if (d.moved && mv) {
+        app.send({ t: "template.update", id: d.id, x: mv.x, y: mv.y });
+        app.recordUndo({ label: "Şablon taşıma", undo: () => app.send({ t: "template.update", id: d.id, x: d.ox, y: d.oy }) });
+      }
+    }
+
     if (drag) {
       const d = drag;
       drag = null;
@@ -1083,9 +1165,11 @@ export function createBoard({ canvas, stage, app }) {
       const d = templateDraft;
       templateDraft = null;
       const clicked = Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 5;
-      if (clicked && d.hit && (you().isDm || d.hit.ownerId === you().id)) {
-        app.send({ t: "template.delete", id: d.hit.id });
-      } else if (!clicked) {
+      if (clicked && d.hit) {
+        selectTemplate(d.hit.id);
+      } else if (clicked) {
+        selectTemplate(null);
+      } else {
         const ref = app.newRef();
         app.send({ t: "template.add", shape: d.shape, x: d.x, y: d.y, angle: d.angle, size: d.size, ref });
         app.recordCreate("template", ref, "Şablon");
@@ -1152,6 +1236,8 @@ export function createBoard({ canvas, stage, app }) {
       selectedIds.clear();
       selectedId = null;
       app.onSelect(null);
+      tplMoves.clear();
+      selectTemplate(null);
       fittedFor = null;
       if (s) fit();
     }
@@ -1161,6 +1247,11 @@ export function createBoard({ canvas, stage, app }) {
         if (!t || (t.x === p.x && t.y === p.y) || Date.now() - p.ts > 3000) pendingMoves.delete(id);
       }
       remoteDrags.clear();
+      for (const [id, mv] of tplMoves) {
+        const t = s.templates.find((x) => x.id === id);
+        if (!t || (t.x === mv.x && t.y === mv.y) || Date.now() - mv.ts > 3000) tplMoves.delete(id);
+      }
+      if (selectedTplId && !s.templates.some((t) => t.id === selectedTplId)) selectTemplate(null);
       for (const id of [...selectedIds]) if (!s.tokens.some((t) => t.id === id)) selectedIds.delete(id);
       if (selectedId && !selectedIds.has(selectedId)) { selectedId = [...selectedIds].pop() || null; app.onSelect(selectedId); }
       if (fittedFor !== s.id && mapSize()) fit();
@@ -1185,6 +1276,9 @@ export function createBoard({ canvas, stage, app }) {
     },
     select,
     selectMany,
+    selectTemplate,
+    get selectedTemplateId() { return selectedTplId; },
+    get pointerWorld() { return { ...lastWorld }; },
     get selectedId() { return selectedId; },
     get selectedIds() { return [...selectedIds]; },
     setTool(t) {

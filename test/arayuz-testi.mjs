@@ -128,20 +128,20 @@ try {
   await sleep(800);
 
   // Temiz, haritasiz bir sahne
-  await dm.eval(`sanalMasa.send({ t: "scene.create", name: "Arayüz Testi", map: "/assets/maps/shadow-dungeon.jpg" })`);
+  await dm.eval(`sanalMasa.send({ t: "scene.create", name: "Arayüz Testi", map: null })`);
   await sleep(800);
   const gs = await dm.eval(`${S}.grid.size`);
   await dm.eval(`sanalMasa.send({ t: "scene.update", id: ${S}.id, grid: { size: 50 } })`);
   await sleep(300);
   const g = 50;
 
-  await pl.eval(`sanalMasa.send({ t: "token.create", name: "Ayla", img: "/assets/tokens/elf-female.jpg", x: ${g * 6.5}, y: ${g * 6.5}, maxHp: 20 })`);
+  await pl.eval(`sanalMasa.send({ t: "token.create", name: "Ayla", x: ${g * 6.5}, y: ${g * 6.5}, maxHp: 20 })`);
   for (const [n, cx] of [["Goblin 1", 14.5], ["Goblin 2", 15.5], ["Goblin 3", 16.5]]) {
     await dm.eval(`sanalMasa.send({ t: "token.create", name: ${JSON.stringify(n)}, kind: "monster", x: ${g * cx}, y: ${g * 6.5}, maxHp: 7 })`);
   }
   await sleep(500);
   for (const who of [dm, pl]) {
-    await who.eval(`(() => { const b = sanalMasa.board; b.fit(); b.zoomBy(3); b.centerOn(${S}.tokens.find(t => t.name === "Ayla")); b.select(null); })()`);
+    await who.eval(`(() => { const b = sanalMasa.board; b.fit(); b.zoomBy(0.8); b.centerOn(${S}.tokens.find(t => t.name === "Ayla")); b.select(null); })()`);
   }
   await sleep(300);
 
@@ -182,7 +182,7 @@ try {
   await sleep(300);
   ok((await pl.eval(`${S}.tokens.filter(t => t.name.startsWith("Goblin")).length`)) === 0, "dark: goblins invisible");
   const aylaId = await pl.eval(`${S}.tokens.find(t => t.name === "Ayla").id`);
-  await pl.eval(`sanalMasa.board.select(${JSON.stringify(aylaId)})`);
+  await pl.eval(`sanalMasa.openCard(${JSON.stringify(aylaId)})`);
   await sleep(300);
   await pl.eval(`(() => { const s = document.querySelectorAll("#tokenCard .sight select")[0]; s.value = "60"; s.dispatchEvent(new Event("change")); })()`);
   await sleep(500);
@@ -221,6 +221,19 @@ try {
   await sleep(500);
   ok((await dm.eval(`${S}.tokens.filter(t => t.name.startsWith("Goblin")).length`)) === 3, "Ctrl+Z restores deleted tokens");
 
+  // Tek tik secer ama kart acmaz, cift tik acar
+  await dm.key("v");
+  await dm.eval(`sanalMasa.board.select(null); sanalMasa.closeCard()`);
+  const gg = await screenOf(dm, "Goblin 1");
+  await dm.click(gg.x, gg.y);
+  await sleep(450);
+  ok(await dm.eval(`document.querySelector("#tokenCard").hidden && sanalMasa.board.selectedId !== null`), "single click selects without opening card");
+  await dm.click(gg.x, gg.y);
+  await dm.click(gg.x, gg.y);
+  await sleep(300);
+  ok(await dm.eval(`!document.querySelector("#tokenCard").hidden`), "double click opens token card");
+  await dm.eval(`sanalMasa.closeCard(); sanalMasa.board.select(null)`);
+
   // Alan sablonu (oyuncu): goblinlerin uzerine 10 ft daire
   await pl.key("t");
   const pg2 = await screenOf(pl, "Goblin 2");
@@ -230,13 +243,28 @@ try {
   const tpl = await pl.eval(`${S}.templates[0]`);
   ok(tpl && tpl.shape === "circle" && tpl.size === 10, "template placed: 10 ft circle");
   await pl.shot("06-sablon.png");
-  await pl.key("z", 2);
-  await sleep(400);
-  ok((await pl.eval(`${S}.templates.length`)) === 0, "Ctrl+Z removes template");
+  // Secim araciyla tut, surukle, rengini degistir, kopyala-yapistir
   await pl.key("v");
+  const tc = await worldToScreen(pl, tpl.x, tpl.y);
+  await pl.drag(tc.x + 5, tc.y + 5, tc.x + 5, tc.y + 105);
+  await sleep(400);
+  const tplMoved = await pl.eval(`${S}.templates[0]`);
+  ok(tplMoved.y > tpl.y + 20, "template dragged with select tool");
+  ok(await pl.eval(`!document.querySelector("#tplBar").hidden`), "template bar shown for selected template");
+  await pl.click$(`document.querySelectorAll("#tplBar .swatch")[2]`);
+  await sleep(300);
+  ok((await pl.eval(`${S}.templates[0].color`)) !== tpl.color, "template color changed from bar");
+  await pl.shot("06b-sablon-secili.png");
+  await pl.key("c", 2);
+  await pl.mouse("mouseMoved", tc.x + 200, tc.y);
+  await pl.key("v", 2);
+  await sleep(400);
+  ok((await pl.eval(`${S}.templates.length`)) === 2, "Ctrl+C / Ctrl+V duplicates template");
+  await pl.eval(`sanalMasa.send({ t: "template.clear" })`);
+  await sleep(300);
 
   // Karakter kagidi: saldiri ekle ve saldir
-  await pl.eval(`sanalMasa.board.select(${JSON.stringify(aylaId)})`);
+  await pl.eval(`sanalMasa.openCard(${JSON.stringify(aylaId)})`);
   await sleep(300);
   await pl.click$(btn("Karakter kağıdı"));
   await sleep(300);
@@ -254,11 +282,40 @@ try {
   ok((await pl.eval(`${S}.tokens.find(t => t.name === "Ayla").sheet.slots[0][1]`)) === 1, "casting a spell uses a slot");
   await pl.eval(`document.querySelector("#modalClose").click()`);
 
+  // Token yapici: kod ile uretilen bir resmi surukle-birak, kaydet, haritaya ekle
+  await pl.click$(`document.querySelector('.tab[data-tab="tokens"]')`);
+  await pl.click$(btn("Kendi resminden token yap"));
+  await sleep(300);
+  await pl.eval(`(async () => {
+    const c = document.createElement("canvas"); c.width = 300; c.height = 200;
+    const x = c.getContext("2d"); x.fillStyle = "#3a6"; x.fillRect(0, 0, 300, 200);
+    x.fillStyle = "#fd5"; x.beginPath(); x.arc(150, 100, 60, 0, 7); x.fill();
+    const blob = await new Promise((r) => c.toBlob(r, "image/png"));
+    const dt = new DataTransfer(); dt.items.add(new File([blob], "orman-ruhu.png", { type: "image/png" }));
+    document.querySelector(".tm-stage").dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true }));
+  })()`);
+  await sleep(600);
+  await pl.shot("11-token-yapici.png");
+  await pl.click$(btn("Kaydet ve kullan"));
+  await sleep(900);
+  ok(await pl.eval(`document.querySelector("#modalTitle").textContent.includes("ekle")`), "token maker opens add-token with new image");
+  await pl.click$(btn("Haritaya ekle"));
+  await sleep(700);
+  const made = await pl.eval(`${S}.tokens.filter(t => t.img && t.img.startsWith("/uploads/tokens/")).length`);
+  ok(made >= 1, "token made with token maker placed on map");
+
+  // Ses menusu
+  await pl.click$(`document.querySelector("#soundMenuBtn")`);
+  ok(await pl.eval(`!document.querySelector("#soundPop").hidden && document.querySelectorAll(".snd-row").length === 3`), "sound menu with 3 sliders");
+  await pl.eval(`(() => { const r = document.querySelectorAll(".snd-range")[1]; r.value = 0.2; r.dispatchEvent(new Event("input")); })()`);
+  ok(await pl.eval(`JSON.parse(localStorage.getItem("sanalmasa.sesayar")).fx === 0.2`), "effects volume saved");
+
   // Muzik
   await dm.click$(`document.querySelector('.tab[data-tab="dm"]')`);
   await dm.click$(btn("Yağmur"));
   await sleep(500);
-  ok(await pl.eval(`!document.querySelector("#musicPill").hidden`), "ambient music pill shown to player");
+  ok(await pl.eval(`document.querySelector("#soundMenuBtn").textContent.includes("Yağmur")`), "now-playing shown on player's sound button");
+  await pl.shot("08b-ses-menusu.png");
   await dm.shot("08-dm-sekmesi.png");
   await dm.click$(btn("■ Durdur"));
 

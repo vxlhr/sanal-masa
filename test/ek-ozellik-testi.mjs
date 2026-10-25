@@ -90,6 +90,16 @@ pl.send({ t: "template.add", shape: "circle", x: 100, y: 100, size: 20, ref: "r1
 await pl.wait();
 const created = pl.last("created");
 ok(created && created.kind === "template" && created.ref === "r1", "template created, id returned for undo");
+pl.send({ t: "template.update", id: created.id, x: 400, y: 300, color: "#59b86b", size: 30 });
+await pl.wait();
+const moved = pl.state.scene.templates.find((t) => t.id === created.id);
+ok(moved.x === 400 && moved.y === 300 && moved.color === "#59b86b" && moved.size === 30, "template moved, recolored, resized");
+const third = await client({ t: "join", name: "Deniz" });
+third.errors.length = 0;
+third.send({ t: "template.update", id: created.id, x: 0 });
+await third.wait();
+ok(third.errors.length === 1, "others cannot edit someone else's template");
+third.ws.close();
 dm.errors.length = 0;
 pl.send({ t: "template.delete", id: created.id });
 await pl.wait();

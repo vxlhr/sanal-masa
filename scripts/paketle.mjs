@@ -50,7 +50,7 @@ function walk(base, dir = "") {
   }
 }
 walk("public");
-walk("assets");
+if (fs.existsSync(path.join(ROOT, "assets"))) walk("assets");
 const seaConfig = {
   main: path.join(BUILD, "sunucu.cjs"),
   output: path.join(BUILD, "sea.blob"),

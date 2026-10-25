@@ -42,15 +42,8 @@ let publicUrl = null;
 /* Gorsel kutuphanesi                                                  */
 /* ------------------------------------------------------------------ */
 
-// Hazir gorsellerin Turkce adlari
-const KNOWN_NAMES = {
-  "ballroom": "Balo Salonu", "forest-camp": "Orman Kampı", "forest-waterfall": "Şelale Vadisi",
-  "shadow-dungeon": "Gölge Zindanı", "elf-female": "Elf Kadın", "elf-male": "Elf Erkek", "npc-mage": "Büyücü",
-};
-
 function prettyName(file) {
   const base = path.basename(file, path.extname(file));
-  if (KNOWN_NAMES[base]) return KNOWN_NAMES[base];
   return base.replace(/-[0-9a-f]{6}$/, "").replace(/[-_]+/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -76,7 +69,35 @@ function listImages(kind) {
 
 const backups = new Backups(DIRS.data);
 const store = new Store(path.join(DIRS.data, "masa.json"), listImages("maps"), (data) => backups.maybe(data));
+migrateAssetUrls();
 const clients = new Set(); // { ws, playerId, cid, voice }
+
+/**
+ * Eski surumlerdeki hazir gorseller (/assets/...) programdan cikarildi. Kayitta bu adresler varsa
+ * ve ayni dosya uploads/ altinda duruyorsa adresi oraya cevir; yoksa gorseli bos birak.
+ */
+function migrateAssetUrls() {
+  let changed = 0;
+  const fix = (url) => {
+    if (typeof url !== "string" || !url.startsWith("/assets/")) return url;
+    const rel = url.slice("/assets/".length);
+    if (readStatic("assets", decodeURIComponent(rel))) return url;
+    changed++;
+    return fs.existsSync(path.join(DIRS.uploads, decodeURIComponent(rel))) ? "/uploads/" + rel : null;
+  };
+  for (const s of store.data.scenes) {
+    s.map = fix(s.map);
+    for (const t of s.tokens) t.img = fix(t.img);
+  }
+  if (store.data.handout && store.data.handout.img) {
+    store.data.handout.img = fix(store.data.handout.img);
+    if (!store.data.handout.img) store.data.handout = null;
+  }
+  if (changed) {
+    store.saveNow();
+    console.log(`  ${changed} eski gorsel adresi guncellendi.`);
+  }
+}
 
 /** Yedekten ya da iceri aktarmadan gelen masayi yukler; oyuncu oturumlari korunur. */
 function replaceData(incoming, byPlayer) {
@@ -492,14 +513,19 @@ function exitAfterKey(code) {
   process.stdin.once("data", () => process.exit(code));
 }
 
+// Siyah pencerede renkli yazi (Windows 10+ ve Mac/Linux terminalleri destekler)
+const C = process.stdout.isTTY && !process.env.NO_COLOR
+  ? { gold: "\x1b[1;33m", green: "\x1b[1;32m", cyan: "\x1b[36m", dim: "\x1b[2m", reset: "\x1b[0m" }
+  : { gold: "", green: "", cyan: "", dim: "", reset: "" };
+
 server.listen(PORT, () => {
   console.log("");
   console.log("  ==========================================");
-  console.log("    D&D SANAL MASA calisiyor");
+  console.log(`    ${C.gold}D&D SANAL MASA calisiyor${C.reset}`);
   console.log("  ==========================================");
-  console.log(`  Bu bilgisayardan : http://localhost:${PORT}`);
-  for (const ip of lanAddresses()) console.log(`  Ayni evden (LAN) : http://${ip}:${PORT}`);
-  console.log(`  DM sifresi       : ${DM_PASSWORD}   (degistirmek icin: ${path.relative(ROOT, config.file)})`);
+  console.log(`  Bu bilgisayardan : ${C.cyan}http://localhost:${PORT}${C.reset}`);
+  for (const ip of lanAddresses()) console.log(`  Ayni evden (LAN) : ${C.cyan}http://${ip}:${PORT}${C.reset}`);
+  console.log(`  DM sifresi       : ${C.gold}${DM_PASSWORD}${C.reset}   ${C.dim}(degistirmek icin: ${path.relative(ROOT, config.file)})${C.reset}`);
   if (IS_PACKAGED) console.log(`  Kayitlar         : ${DATA_ROOT}`);
   console.log("");
   console.log("  Kapatmak icin bu pencereyi kapat (veya Ctrl+C).");
@@ -516,8 +542,8 @@ server.listen(PORT, () => {
         if (!url) return;
         console.log("");
         console.log("  ************************************************************");
-        console.log("    ARKADASLARINA BU ADRESI GONDER:");
-        console.log(`    ${url}`);
+        console.log(`    ${C.gold}ARKADASLARINA BU ADRESI GONDER:${C.reset}`);
+        console.log(`    ${C.green}${url}${C.reset}`);
         console.log("  ************************************************************");
         console.log("  (Masadaki 'Davet et' dugmesi de bu adresi kopyalar.)");
         console.log("");

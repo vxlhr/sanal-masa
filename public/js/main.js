@@ -1,5 +1,5 @@
 // Uygulama girisi: giris ekrani, baglanti, durum dagitimi, araclar ve kisayollar
-import { h, $, $$, toast, PALETTE, initials } from "./util.js";
+import { h, $, $$, toast, PALETTE, initials, fill } from "./util.js";
 import { Net } from "./net.js";
 import { createBoard } from "./board.js";
 import { createChat } from "./chat.js";
@@ -10,6 +10,8 @@ import { createExtras } from "./extras.js";
 import { createVoice } from "./voice.js";
 import { createMusic } from "./music.js";
 import { createDmPanel } from "./dmpanel.js";
+import { createSoundMenu } from "./soundmenu.js";
+import { SHAPE_LABEL } from "./geometry.js";
 
 const SESSION_KEY = "sanalmasa.oturum";
 const NAME_KEY = "sanalmasa.isim";
@@ -21,7 +23,23 @@ const app = {
   send: (msg) => net.send(msg),
   isTabOpen: (name) => $(".tab.active")?.dataset.tab === name && !$("#app").classList.contains("side-closed"),
   onZoom: (s) => { $("#zoomLabel").textContent = Math.round(s * 100) + "%"; },
-  onSelect: () => { if (app.state) renderUi(); },
+  cardId: null,
+  onSelect: (id) => {
+    // Baska bir token secilince acik kart kapanir; kart sadece cift tikla acilir
+    if (app.cardId && app.cardId !== id) app.cardId = null;
+    if (id && !app.cardId) showCardHint();
+    if (app.state) renderUi();
+  },
+  openCard: (id) => {
+    board.select(id);
+    app.cardId = id;
+    if (app.state) renderUi();
+  },
+  closeCard: () => {
+    app.cardId = null;
+    if (app.state) renderUi();
+  },
+  onTemplateSelect: () => { if (app.state) renderTemplateBar(app.state); },
   newRef: () => "r" + Math.random().toString(36).slice(2, 10),
   recordUndo: (entry) => {
     undoStack.push(entry);
@@ -156,7 +174,7 @@ function setState(st) {
   document.body.classList.toggle("is-dm", st.you.isDm);
   board.onState();
   if (pendingSelect && st.scene && st.scene.tokens.some((t) => t.id === pendingSelect)) {
-    board.select(pendingSelect);
+    app.openCard(pendingSelect);
     pendingSelect = null;
   }
   renderUi();
@@ -179,6 +197,7 @@ app.voice = voice;
 const music = createMusic(app);
 app.music = music;
 const dmPanel = createDmPanel(app);
+createSoundMenu(app);
 initModal();
 
 function renderUi() {
@@ -215,13 +234,13 @@ function renderUi() {
   const empty = $("#emptyState");
   if (!s) {
     empty.hidden = false;
-    empty.replaceChildren(
+    fill(empty,
       h("h2", me.isDm ? "Henüz sahne yok" : "Masa hazırlanıyor"),
       h("p", me.isDm ? "İlk sahneni oluştur, oyuncular otomatik olarak görecek." : "DM bir sahne açtığında harita burada görünecek."),
       me.isDm ? h("button.btn.primary", { type: "button", onClick: () => panels.openNewScene() }, "Sahne oluştur") : null);
   } else if (!s.map && !s.tokens.length && me.isDm) {
     empty.hidden = false;
-    empty.replaceChildren(
+    fill(empty,
       h("h2", "Bu sahnenin haritası yok"),
       h("p", "Haritalar sekmesinden bir harita seç ya da kendi görselini yükle."),
       h("button.btn.primary", { type: "button", onClick: () => openTab("scenes") }, "Haritalar"));
@@ -240,6 +259,72 @@ function renderUi() {
   dmPanel.render(st);
   voice.onState(st);
   renderSelectionBar(st);
+  renderTemplateBar(st);
+}
+
+let cardHintShown = false;
+function showCardHint() {
+  if (cardHintShown) return;
+  cardHintShown = true;
+  const hint = $("#hint");
+  if (!hint.hidden) return;
+  hint.textContent = "Ayrıntılar için tokene çift tıkla";
+  hint.hidden = false;
+  setTimeout(() => { if (hint.textContent.startsWith("Ayrıntılar")) hint.hidden = true; }, 2600);
+}
+
+/* ---------------- Alan sablonu duzenleme ---------------- */
+
+let templateClipboard = null;
+
+function selectedTemplate() {
+  const s = app.state && app.state.scene;
+  return s && s.templates.find((t) => t.id === board.selectedTemplateId);
+}
+
+function copyTemplate() {
+  const t = selectedTemplate();
+  if (!t) return false;
+  templateClipboard = { shape: t.shape, size: t.size, angle: t.angle, color: t.color, x: t.x, y: t.y };
+  toast("Şablon kopyalandı · Ctrl+V ile yapıştır", "ok");
+  return true;
+}
+
+function pasteTemplate() {
+  if (!templateClipboard) return false;
+  const p = board.pointerWorld;
+  const ref = app.newRef();
+  app.send({ t: "template.add", ...templateClipboard, x: p.x, y: p.y, ref });
+  app.recordCreate("template", ref, "Şablon yapıştırma");
+  return true;
+}
+
+function renderTemplateBar(st) {
+  const bar = $("#tplBar");
+  const t = selectedTemplate();
+  if (!t) { bar.hidden = true; bar._key = null; return; }
+  const key = JSON.stringify([t.id, t.color, t.size, t.angle]);
+  bar.hidden = false;
+  if (bar._key === key) return;
+  bar._key = key;
+  const upd = (fields) => app.send({ t: "template.update", id: t.id, ...fields });
+  const rotatable = t.shape === "cone" || t.shape === "line" || t.shape === "square";
+  bar.replaceChildren(...[
+    h("b", `${SHAPE_LABEL[t.shape]} · ${t.size} ft`),
+    h("div.swatches.small", [...PALETTE, "#ffffff", "#111111"].map((c) => h("button.swatch", {
+      type: "button", class: c === t.color ? "on" : "", style: { background: c }, title: "Renk",
+      onClick: () => upd({ color: c }),
+    }))),
+    h("div.stepper", { title: "Boyut (5 ft adımlarla)" },
+      h("button", { type: "button", onClick: () => upd({ size: Math.max(5, t.size - 5) }) }, "−"),
+      h("span", { style: { minWidth: "44px", fontSize: "12px" } }, `${t.size} ft`),
+      h("button", { type: "button", onClick: () => upd({ size: t.size + 5 }) }, "+")),
+    rotatable ? h("div.stepper", { title: "Döndür" },
+      h("button", { type: "button", onClick: () => upd({ angle: t.angle - Math.PI / 12 }) }, "⟲"),
+      h("button", { type: "button", onClick: () => upd({ angle: t.angle + Math.PI / 12 }) }, "⟳")) : null,
+    h("button.btn.small", { type: "button", title: "Ctrl+C, sonra haritada Ctrl+V", onClick: copyTemplate }, "Kopyala"),
+    h("button.btn.small.danger", { type: "button", title: "Delete", onClick: () => app.send({ t: "template.delete", id: t.id }) }, "Sil"),
+  ].filter(Boolean));
 }
 
 /** Birden fazla token secilince alttaki toplu islem cubugu */
@@ -252,7 +337,7 @@ function renderSelectionBar(st) {
   const tokens = ids.map((id) => s.tokens.find((t) => t.id === id));
   const allHidden = tokens.every((t) => t.hidden);
   bar.hidden = false;
-  bar.replaceChildren(
+  fill(bar,
     h("b", `${ids.length} token seçili`),
     me.isDm ? h("button.btn.small", { type: "button", onClick: () => ids.forEach((id) => app.send({ t: "token.update", id, fields: { hidden: !allHidden } })) },
       allHidden ? "Göster" : "Gizle") : null,
@@ -334,6 +419,8 @@ $("#logoutBtn").addEventListener("click", () => {
 });
 
 /* ---------------- Sekmeler ---------------- */
+
+app.openTab = (name) => openTab(name);
 
 function openTab(name) {
   $("#app").classList.remove("side-closed");
@@ -439,6 +526,14 @@ $$("#templateShapes button").forEach((b) => b.addEventListener("click", () => {
   $$("#templateShapes button").forEach((x) => x.classList.toggle("on", x === b));
 }));
 $("#templateClear").addEventListener("click", () => app.send({ t: "template.clear" }));
+$("#templateColors").replaceChildren(
+  h("button.swatch.mine", { type: "button", class: "on", title: "Kendi rengim", onClick: (e) => pickTemplateColor(null, e) }),
+  ...[...PALETTE, "#ffffff", "#111111"].map((c) => h("button.swatch", { type: "button", style: { background: c }, onClick: (e) => pickTemplateColor(c, e) })));
+function pickTemplateColor(c, e) {
+  board.templateOpts.color = c;
+  $$("#templateColors .swatch").forEach((x) => x.classList.remove("on"));
+  e.currentTarget.classList.add("on");
+}
 $("#fogRevealAll").addEventListener("click", () => app.send({ t: "fog.reset", mode: "reveal" }));
 $("#fogHideAll").addEventListener("click", () => {
   if (confirm("Tüm harita sisle kapatılsın mı?")) app.send({ t: "fog.reset", mode: "hide" });
@@ -464,6 +559,8 @@ function typing(e) {
 document.addEventListener("keydown", (e) => {
   if (!app.state || $("#app").hidden || isModalOpen() || typing(e)) return;
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { app.undo(); e.preventDefault(); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c" && copyTemplate()) { e.preventDefault(); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v" && pasteTemplate()) { e.preventDefault(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a" && app.state.scene) {
     const me = app.state.you;
     board.selectMany(app.state.scene.tokens.filter((t) => me.isDm || t.ownerId === me.id).map((t) => t.id));
@@ -477,12 +574,14 @@ document.addEventListener("keydown", (e) => {
   if (e.key === " ") { board.setSpace(true); e.preventDefault(); return; }
   if (e.key === "Enter" && board.drawingWall) { board.finishWall(); e.preventDefault(); return; }
   if (e.key === "Escape" && board.drawingWall) { board.cancelWall(); return; }
-  if (e.key === "Escape") { board.cancel(); board.select(null); setTool("select"); return; }
+  if (e.key === "Escape") { board.cancel(); board.select(null); board.selectTemplate(null); app.closeCard(); setTool("select"); return; }
   if (e.key === "+" || e.key === "=") { board.zoomBy(1.25); return; }
   if (e.key === "-") { board.zoomBy(0.8); return; }
   if (e.key === "0") { board.fit(); return; }
   if (e.key === "Enter") { openTab("chat"); $("#chatInput").focus(); e.preventDefault(); return; }
   if (e.key === "Delete" || e.key === "Backspace") {
+    const tpl = selectedTemplate();
+    if (tpl) { app.send({ t: "template.delete", id: tpl.id }); e.preventDefault(); return; }
     const ids = board.selectedIds;
     if (ids.length) app.deleteTokens(ids); // Ctrl+Z ile geri alinabildigi icin soru sormadan
     e.preventDefault();

@@ -1,5 +1,5 @@
 // DM sekmesi: sahne notlari, ortam sesi/muzik, oturum ozeti, yedekler ve masa dosyasi.
-import { h, $, stableRender, toast } from "./util.js";
+import { h, $, stableRender, toast, fill } from "./util.js";
 import { openModal, closeModal, fetchLibrary, uploadImage } from "./picker.js";
 import { AMBIENT } from "./music.js";
 
@@ -82,7 +82,7 @@ export function createDmPanel(app) {
       let lib;
       try { lib = await fetchLibrary(); } catch { return; }
       const items = lib.audio || [];
-      list.replaceChildren(
+      fill(list,
         h("button.btn.small.block.gold", { type: "button", onClick: () => fileInput.click() }, "⬆ MP3 / OGG yükle"),
         ...(items.length ? items.map((a) => h("div.backup-row",
           h("span", a.name),

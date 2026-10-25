@@ -148,9 +148,11 @@ textarea.input { resize: vertical; min-height: 64px; }
   display: flex; align-items: center; justify-content: center;
   padding: 24px 16px;
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(208, 167, 82, .16), transparent 60%),
-    linear-gradient(rgba(15, 16, 20, .82), rgba(15, 16, 20, .96)),
-    url("/assets/maps/shadow-dungeon.jpg") center / cover;
+    radial-gradient(ellipse at 50% 0%, rgba(208, 167, 82, .18), transparent 60%),
+    radial-gradient(circle at 50% 50%, transparent 30%, rgba(5, 6, 9, .9) 85%),
+    repeating-linear-gradient(0deg, rgba(208, 167, 82, .06) 0 1px, transparent 1px 56px),
+    repeating-linear-gradient(90deg, rgba(208, 167, 82, .06) 0 1px, transparent 1px 56px),
+    #121318;
 }
 .login-card {
   width: 100%; max-width: 410px;

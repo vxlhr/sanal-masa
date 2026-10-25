@@ -1,5 +1,6 @@
 // Pencere (modal) ve gorsel kutuphanesi secici
 import { h, $, icon, toast } from "./util.js";
+import { openTokenMaker } from "./tokenmaker.js";
 
 let onCloseFn = null;
 
@@ -99,6 +100,20 @@ export function imageGrid({ kind, secret, selected, allowNone, onPick, canUpload
     if (canUpload) {
       tiles.push(h("button.pick.upload", { type: "button", onClick: () => fileInput.click() },
         icon("upload"), h("div", "Bilgisayardan yükle")));
+    }
+    if (kind === "tokens") {
+      tiles.push(h("button.pick.upload.maker", {
+        type: "button",
+        title: "Bir resimden yuvarlak, çerçeveli token yap",
+        onClick: () => openTokenMaker({
+          secret,
+          onDone: async (url, name) => {
+            current = url;
+            await load();
+            onPick(url, name);
+          },
+        }),
+      }, h("span.maker-ico", "🎨"), h("div", "Token yapıcı")));
     }
     if (allowNone) {
       const none = h("button.pick.none", {

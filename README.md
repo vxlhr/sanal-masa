@@ -3,7 +3,7 @@
 **Tarayıcıdan oynanan, kurulumu 2 dakika süren çevrimiçi Dungeons & Dragons masası.**
 DM kendi bilgisayarında çalıştırır, oyuncular gelen linke tıklar. Hesap, abonelik, port açma yok.
 
-![DM ekranı: duvarlar ve dinamik görüş](docs/dm-duvar.png)
+![Karakter kağıdı](docs/karakter-kagidi.png)
 
 ## Neler var?
 
@@ -12,12 +12,13 @@ DM kendi bilgisayarında çalıştırır, oyuncular gelen linke tıklar. Hesap, 
 | 🗺️ **Harita** | Sürükle, yakınlaştır, ızgara ayarı, telefonda iki parmakla kullanım |
 | 👁️ **Dinamik görüş** | Duvarlar ve kapılar görüşü keser, karanlıkta sadece ışık ve karanlık görüş işe yarar |
 | 🌫️ **Savaş sisi** | DM alan alan açar. Görünmeyen düşmanlar oyuncunun tarayıcısına hiç gönderilmez |
-| 🔥 **Alan şablonları** | Fireball dairesi, koni, çizgi, kare; içinde kalan hedefleri sayar |
+| 🔥 **Alan şablonları** | Fireball dairesi, koni, çizgi, kare; içindeki hedefleri sayar. Taşı, rengini değiştir, Ctrl+C / Ctrl+V |
+| 🎨 **Token yapıcı** | Herhangi bir resimden yuvarlak, çerçeveli token: yükle, sürükle-bırak ya da yapıştır |
 | 📜 **Karakter kağıdı** | Yetenekler, beceriler, saldırılar, büyüler, büyü yuvaları. Tıkla, zar atılsın |
 | ⚔️ **Savaş** | İnisiyatif, tur takibi, "Sıra sende!" bildirimi, ölen yaratık duyurusu |
 | 🎲 **Zarlar** | Tek tık, avantaj/dezavantaj, `/r 2d6+3`, doğal 20 ve 1 animasyonları |
 | 🎙️ **Sesli sohbet** | Discord gerekmez; tarayıcıdan tarayıcıya, kişi başı ses ayarı |
-| 🌧️ **Ortam sesi** | Yağmur, fırtına, taverna, mağara… ya da kendi müziğin. Herkeste çalar |
+| 🌧️ **Ortam sesi** | Yağmur, fırtına, taverna, mağara… ya da kendi müziğin. Herkes kendi ses düzeyini ayarlar |
 | 🐉 **Hazır yaratıklar** | Goblin'den Kırmızı Ejderha'ya, HP ve AC otomatik |
 | 🖼️ **Görsel göster** | DM bir mektubu ya da NPC portresini herkesin ekranında açar |
 | ↩️ **Geri al** | Ctrl+Z: taşıma, silme, çizim, hasar… |
@@ -25,8 +26,8 @@ DM kendi bilgisayarında çalıştırır, oyuncular gelen linke tıklar. Hesap, 
 | 📊 **Oturum özeti** | Gecenin sonunda kim kaç kritik attı, kaç yaratık öldü |
 
 <p>
-  <img src="docs/oyuncu-isik.png" width="49%" alt="Oyuncu karanlıkta meşale ile görüyor">
-  <img src="docs/karakter-kagidi.png" width="49%" alt="Karakter kağıdı">
+  <img src="docs/token-yapici.png" width="49%" alt="Token yapıcı">
+  <img src="docs/sablon.png" width="49%" alt="Alan şablonu düzenleme">
 </p>
 
 ## Kurulum (sadece DM) — indir, çift tıkla
@@ -68,6 +69,12 @@ programın yanındaki `SanalMasa-Veri` klasöründe durur; programı her zaman a
 Bu şekilde kayıtlar proje içindeki `data/` klasöründe durur.
 </details>
 
+## Haritalar ve görseller
+
+Programla birlikte hazır harita ya da token resmi gelmez. Kendi haritalarını **Haritalar → Yeni sahne → Bilgisayardan yükle**
+ile eklersin; tokenları **Token yapıcı** ile istediğin resimden yaparsın. Telifli görselleri yalnızca kendi masanda,
+hak sahibinin izin verdiği ölçüde kullan.
+
 ## Oyuncular için
 
 Gelen linke tıkla, adını yaz, **Masaya otur**. Bir şey kurman gerekmez; telefonda da çalışır.
@@ -80,7 +87,9 @@ Sayfa yenilense ya da internet kopsa kendiliğinden geri bağlanır.
 | `V` `M` `D` `P` `T` | Seç · Ölç · Çiz · İşaret ver · Alan şablonu |
 | `F` `W` | (DM) Savaş sisi · Duvar, kapı ve görüş |
 | `Shift` + sürükle | Kutu ile çoklu seçim |
+| Çift tık | Tokenin ayrıntı kartını aç |
 | `Ctrl+Z` | Geri al |
+| `Ctrl+C` / `Ctrl+V` | Seçili alan şablonunu kopyala / imlecin olduğu yere yapıştır |
 | `Ctrl+A` | Tüm tokenlarını seç |
 | `Delete` | Seçilenleri sil |
 | `Alt` + tık | Haritada bir yeri herkese göster |
@@ -112,7 +121,6 @@ modülleri ve tek bir `<canvas>`.
 ```
 server/        Sunucu: index.js (HTTP + WebSocket), actions*.js (komutlar), state.js (durum ve görünürlük)
 public/        Arayüz: board.js (harita motoru), voice.js (sesli sohbet), music.js (ortam sesi) …
-assets/        Hazır haritalar ve token görselleri
 test/          Sunucu ve tarayıcı testleri
 ```
 

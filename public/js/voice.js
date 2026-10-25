@@ -1,6 +1,7 @@
 // Sesli sohbet: WebRTC ile herkes herkese dogrudan baglanir (en fazla 10 kisi).
 // Sunucu sadece baglanti bilgisini iletir; ses sunucudan gecmez.
-import { h, $, toast, icon } from "./util.js";
+import { h, $, toast, icon, fill } from "./util.js";
+import { soundSettings } from "./sound.js";
 
 const DEFAULT_ICE = [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun.cloudflare.com:3478" }];
 const VOL_KEY = "sanalmasa.sesler";
@@ -24,6 +25,10 @@ export function createVoice(app) {
   const btn = $("#voiceBtn");
   const muteBtn = $("#muteBtn");
   const pop = $("#voicePop");
+
+  soundSettings.onChange(() => {
+    for (const p of peers.values()) p.audio.volume = (volumes[p.playerId] ?? 1) * soundSettings.level("voice");
+  });
 
   fetch("/api/info").then((r) => r.json()).then((i) => { if (i.iceServers) iceServers = i.iceServers; }).catch(() => {});
 
@@ -89,7 +94,7 @@ export function createVoice(app) {
     const pc = new RTCPeerConnection({ iceServers });
     const audio = new Audio();
     audio.autoplay = true;
-    audio.volume = volumes[playerId] ?? 1;
+    audio.volume = (volumes[playerId] ?? 1) * soundSettings.level("voice");
     const peer = { pc, audio, playerId, pending: [], an: null };
     peers.set(cid, peer);
 
@@ -234,15 +239,16 @@ export function createVoice(app) {
         h("span.voice-name", name(p.playerId)),
         h("span.voice-state", { class: state }, state === "connected" ? "bağlı" : state === "failed" ? "bağlanamadı" : "bağlanıyor…"),
         h("input", {
-          type: "range", min: 0, max: 1, step: 0.05, value: p.audio.volume, title: "Ses düzeyi",
+          type: "range", min: 0, max: 1, step: 0.05, title: "Bu kişinin ses düzeyi",
+          value: volumes[p.playerId] ?? 1,
           onInput: (e) => {
-            p.audio.volume = Number(e.target.value);
-            volumes[p.playerId] = p.audio.volume;
+            volumes[p.playerId] = Number(e.target.value);
+            p.audio.volume = volumes[p.playerId] * soundSettings.level("voice");
             try { localStorage.setItem(VOL_KEY, JSON.stringify(volumes)); } catch { /* yok */ }
           },
         }));
     });
-    pop.replaceChildren(
+    fill(pop,
       h("div.voice-title", "Sesli sohbet"),
       rows.length ? h("div", rows) : h("p.muted.small-text", "Henüz kimse yok. Arkadaşların da 'Sesli sohbet'e bassın."),
       h("p.muted.small-text", "Ses doğrudan tarayıcılar arasında akar. Bazı okul/iş ağlarında çalışmayabilir."),

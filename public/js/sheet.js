@@ -1,5 +1,5 @@
 // Karakter kagidi: yetenek puanlari, kurtarma zarlari, beceriler. Her deger tiklanınca zar atar.
-import { h } from "./util.js";
+import { h, fill } from "./util.js";
 import { openModal } from "./picker.js";
 import { ABILITIES, SKILLS, mod, fmtMod, profForLevel, defaultSheet } from "./data.js";
 
@@ -112,7 +112,7 @@ export function openSheet(app, token) {
         h("button.skill-bonus", { type: "button", onClick: () => roll(skillBonus(sk), sk.name) }, fmtMod(skillBonus(sk))));
     }));
 
-    body.replaceChildren(
+    fill(body,
       header,
       badges,
       h("div.section-title", "Yetenekler", h("small.muted", "Büyük sayıya tıkla → zar at")),

@@ -87,6 +87,19 @@ export function createMoreActions(ctx) {
       return "state";
     },
 
+    "template.update"(p, m) {
+      const s = scene();
+      const t = s.templates.find((x) => x.id === m.id);
+      if (!t) return "none";
+      if (!p.isDm && t.ownerId !== p.id) fail("Başkasının şablonunu değiştiremezsin.");
+      if (m.x !== undefined) t.x = num(m.x, -1e5, 1e5, t.x);
+      if (m.y !== undefined) t.y = num(m.y, -1e5, 1e5, t.y);
+      if (m.angle !== undefined) t.angle = num(m.angle, -10, 10, t.angle);
+      if (m.size !== undefined) t.size = int(m.size, 5, 500, t.size);
+      if (m.color !== undefined) t.color = color(m.color, t.color);
+      return "state";
+    },
+
     "template.delete"(p, m) {
       const s = scene();
       const t = s.templates.find((x) => x.id === m.id);

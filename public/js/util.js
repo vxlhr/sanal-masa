@@ -103,9 +103,14 @@ export const KIND_LABEL = { pc: "Oyuncu karakteri", npc: "NPC", monster: "Düşm
 
 export const PALETTE = ["#e05d5d", "#4f9be0", "#59b86b", "#d9a43c", "#a46be0", "#3cc6c0", "#e07d3c", "#d65fa8"];
 
-/** "/assets/tokens/npc-mage-a1b2c3.webp" -> "Npc Mage" */
+/** "/uploads/tokens/kara-sovalye-a1b2c3.png" -> "Kara Sovalye" */
 export function nameFromUrl(url) {
   return decodeURIComponent(String(url).split("/").pop())
     .replace(/\.\w+$/, "").replace(/-[0-9a-f]{6}$/, "").replace(/[-_]+/g, " ").trim()
     .replace(/(^|\s)\S/g, (c) => c.toLocaleUpperCase("tr"));
+}
+
+/** replaceChildren gibi, ama bos (null/false) ogeleri "null" yazisi olarak basmaz */
+export function fill(el, ...children) {
+  el.replaceChildren(...children.flat(Infinity).filter((c) => c !== null && c !== undefined && c !== false));
 }

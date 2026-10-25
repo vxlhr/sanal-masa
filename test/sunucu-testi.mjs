@@ -32,7 +32,7 @@ bad.ws.close();
 const dm = await client({ t: "join", name: "Usta", asDm: true, password: process.env.DM_PASSWORD || JSON.parse(fs.readFileSync((process.env.DATA || "test/veri") + "/ayarlar.json", "utf8")).dmSifresi });
 const pl = await client({ t: "join", name: "Ayla", color: "#4f9be0" });
 ok(!pl.state.you.isDm && pl.state.scenes.length === 0, "player has no scene list");
-ok(dm.state.scenes.length >= 4, "dm sees scene list");
+ok(dm.state.scenes.length >= 1, "dm sees scene list");
 
 // player creates own token
 pl.send({ t: "token.create", name: "Ayla", x: 300, y: 300, maxHp: 20, hidden: true, kind: "monster" });
@@ -76,7 +76,7 @@ dm.send({ t: "fog.toggle", enabled: false });
 
 // player cannot do DM stuff
 pl.errors.length = 0;
-pl.send({ t: "scene.activate", id: dm.state.scenes[1].id });
+pl.send({ t: "scene.activate", id: dm.state.scenes[0].id });
 pl.send({ t: "fog.reset", mode: "reveal" });
 pl.send({ t: "player.kick", id: dm.state.you.id });
 await pl.wait();

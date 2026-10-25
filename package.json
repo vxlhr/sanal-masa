@@ -1,6 +1,6 @@
 {
   "name": "sanal-masa",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "private": true,
   "description": "Tarayicidan oynanan, kurulumu kolay cevrimici D&D masasi (virtual tabletop): harita, sis, gorus, zar, sesli sohbet.",
   "type": "module",

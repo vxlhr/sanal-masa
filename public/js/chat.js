@@ -1,6 +1,6 @@
 // Sohbet gunlugu ve zar tepsisi
 import { h, $, $$, icon, timeStr } from "./util.js";
-import { playRoll, preview, naturalD20, sound } from "./fx.js";
+import { playRoll, preview, naturalD20 } from "./fx.js";
 
 const DICE = [4, 6, 8, 10, 12, 20, 100];
 
@@ -122,14 +122,6 @@ export function createChat(app) {
       $$("#advSeg button").forEach((x) => x.classList.toggle("on", x === b));
     };
   }
-
-  const soundBtn = $("#soundBtn");
-  const syncSound = () => {
-    soundBtn.classList.toggle("off", !sound.on);
-    soundBtn.textContent = sound.on ? "Ses açık" : "Ses kapalı";
-  };
-  soundBtn.onclick = () => { sound.on = !sound.on; syncSound(); };
-  syncSound();
 
   /* ---------------- Yazma ---------------- */
 

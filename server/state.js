@@ -55,7 +55,7 @@ export class Store {
     } catch (err) {
       if (err.code !== "ENOENT") console.warn("  [!] Kayit okunamadi, yeni masa aciliyor:", err.message);
     }
-    const scenes = seedMaps.map((m) => createScene(m.name, m.url));
+    const scenes = seedMaps.length ? seedMaps.map((m) => createScene(m.name, m.url)) : [createScene("İlk Sahne", null)];
     return {
       formatVersion: 2,
       activeSceneId: scenes[0] ? scenes[0].id : null,

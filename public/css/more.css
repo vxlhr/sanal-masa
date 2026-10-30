@@ -164,3 +164,26 @@
   .sound-menu-btn span { display: none; }
 }
 .msg.system { white-space: pre-line; }
+
+/* ================================================================
+   Sesli sohbet: mikrofon ayarlari
+   ================================================================ */
+.voice-pop { width: 360px; max-height: calc(100vh - 80px); overflow-y: auto; }
+.voice-sub { margin-top: 4px; font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); }
+.voice-peers { display: flex; flex-direction: column; gap: 6px; }
+.voice-row { grid-template-columns: 1fr auto 90px; }
+.mic-box { display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.mic-device { padding: 7px 9px; font-size: 13px; }
+.mic-modes button { font-size: 11px; padding: 6px 4px; }
+.mic-modes.busy { opacity: .5; pointer-events: none; }
+.mic-hint { margin: 0; font-size: 11px; line-height: 1.4; color: var(--faint); }
+.mic-hint.warn { color: #f1d38c; }
+.mic-switch { font-size: 13px; }
+.mic-gate { display: flex; flex-direction: column; gap: 6px; padding-left: 42px; }
+.mic-gate.disabled { opacity: .4; pointer-events: none; }
+.mic-level { position: relative; height: 10px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+.mic-level-fill { height: 100%; width: 0; background: linear-gradient(90deg, #4a4d5a, #8a8d9a); transition: width .06s linear; }
+.mic-level.open .mic-level-fill { background: linear-gradient(90deg, #3f9a5a, #5cbf75); }
+.mic-level-marker { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--gold); box-shadow: 0 0 4px var(--gold); }
+.mute-btn.ptt { color: var(--gold); }
+.mute-btn.talking { color: #fff; background: rgba(92, 191, 117, .35); box-shadow: 0 0 0 2px rgba(92, 191, 117, .6); }

@@ -137,7 +137,7 @@ export function createExtras(app) {
       h("p", "Karakter sekmesinden tokenini haritaya koy. Tokenine tıklayıp ", h("b", "Karakter kağıdı"),
         "nı aç: yetenek, beceri, saldırı ve büyülere tıklayınca zar otomatik atılır."),
       h("h3", "Sesli sohbet"),
-      h("p", "Üstteki ", h("b", "Sesli sohbet"), " düğmesine bas ve mikrofon izni ver. Konuşan kişinin yuvarlağı yeşil yanar. Kişilerin sesini ayrı ayrı ayarlayabilirsin.")));
+      h("p", "Üstteki ", h("b", "Sesli sohbet"), " düğmesine bas ve mikrofon izni ver. Konuşan kişinin yuvarlağı yeşil yanar. Aynı düğmeden yapay zeka gürültü engellemeyi, ses kapısını, bas-konuşu ve mikrofonunu ayarlarsın; kişilerin sesini ayrı ayrı açıp kısabilirsin.")));
   });
 
   return {

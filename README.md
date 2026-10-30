@@ -17,7 +17,7 @@ DM kendi bilgisayarında çalıştırır, oyuncular gelen linke tıklar. Hesap, 
 | 📜 **Karakter kağıdı** | Yetenekler, beceriler, saldırılar, büyüler, büyü yuvaları. Tıkla, zar atılsın |
 | ⚔️ **Savaş** | İnisiyatif, tur takibi, "Sıra sende!" bildirimi, ölen yaratık duyurusu |
 | 🎲 **Zarlar** | Tek tık, avantaj/dezavantaj, `/r 2d6+3`, doğal 20 ve 1 animasyonları |
-| 🎙️ **Sesli sohbet** | Discord gerekmez; tarayıcıdan tarayıcıya, kişi başı ses ayarı |
+| 🎙️ **Sesli sohbet** | Discord gerekmez. **Yapay zeka gürültü engelleme** (fan, klavye, klima sesini siler), ses kapısı, bas-konuş, mikrofon seçimi, kişi başı ses ayarı |
 | 🌧️ **Ortam sesi** | Yağmur, fırtına, taverna, mağara… ya da kendi müziğin. Herkes kendi ses düzeyini ayarlar |
 | 🐉 **Hazır yaratıklar** | Goblin'den Kırmızı Ejderha'ya, HP ve AC otomatik |
 | 🖼️ **Görsel göster** | DM bir mektubu ya da NPC portresini herkesin ekranında açar |
@@ -99,6 +99,11 @@ Sayfa yenilense ya da internet kopsa kendiliğinden geri bağlanır.
 
 ## Sık sorulanlar
 
+**Arkadaşımın sesinde gürültü var.** Sesli sohbet penceresinden "Gürültü engelleme: Güçlü" seçili olmalı
+(varsayılan). Klavye sesi hâlâ geçiyorsa "Ses kapısı" eşiğini biraz sağa çek. Eski bir bilgisayar ya da telefonda
+ses takılırsa "Hafif" moda geç. Yapay zeka süzgeci Chrome, Edge ve Opera'da çalışır; desteklemeyen tarayıcılarda
+standart süzgeç kullanılır.
+
 **Sesli sohbet bağlanmıyor.** Ses, tarayıcılar arasında doğrudan akar (WebRTC). Bazı okul, iş ya da mobil
 ağlarında bu engellenebilir. İleri düzey kullanıcılar `data/ayarlar.json` içindeki `iceServers` listesine bir
 TURN sunucusu ekleyebilir. Ayrıca sesli sohbet için `https` adresi (İnternete Aç) ya da `localhost` gerekir.
@@ -138,11 +143,17 @@ GitHub Actions Windows, Mac ve Linux programlarını üretip Releases sayfasına
 
 ---
 
+### Üçüncü taraf bileşenler
+
+Gürültü engelleme [@sapphi-red/web-noise-suppressor](https://github.com/sapphi-red/web-noise-suppressor) (MIT) ile yapılır;
+içindeki modeller [RNNoise](https://github.com/xiph/rnnoise) (BSD-3-Clause, [rnnoise-wasm](https://github.com/shiguredo/rnnoise-wasm) Apache-2.0)
+ve [GTCRN](https://github.com/Xiaobin-Rong/gtcrn) (MIT). Lisans metinleri: `public/vendor/gurultu/LISANSLAR.txt`.
+
 ### English
 
 **Sanal Masa** is a self-hosted, zero-config virtual tabletop for D&D 5e (Turkish UI). The DM runs it with
 Node.js; players just open a link. Features: dynamic lighting with walls and doors, fog of war, AoE templates,
-character sheets with clickable rolls, initiative tracker, built-in peer-to-peer voice chat, ambient sound,
+character sheets with clickable rolls, initiative tracker, built-in peer-to-peer voice chat with AI noise suppression (GTCRN / RNNoise), ambient sound,
 undo, automatic backups and one-click internet access via Cloudflare quick tunnels (no account needed).
 Download the single-file executable from Releases and double-click it — no Node.js required.
 Hidden information (hidden tokens, fogged enemies, DM notes) is filtered server-side.

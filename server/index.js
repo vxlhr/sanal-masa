@@ -259,6 +259,7 @@ const MIME = {
   ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",
   ".gif": "image/gif", ".svg": "image/svg+xml", ".ico": "image/x-icon",
   ".mp3": "audio/mpeg", ".ogg": "audio/ogg", ".wav": "audio/wav", ".m4a": "audio/mp4", ".webm": "audio/webm",
+  ".wasm": "application/wasm", ".txt": "text/plain; charset=utf-8",
 };
 
 function dmFromRequest(req) {

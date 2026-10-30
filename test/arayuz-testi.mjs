@@ -340,7 +340,59 @@ try {
   }
   ok(states[0] === "connected", "voice chat peers connected (" + states.join(",") + ")");
   ok(await dm.eval(`document.querySelectorAll(".pdot.in-voice").length`) === 2, "both shown as in voice");
+
+  // Gurultu engelleme: varsayilan yapay zeka suzgeci yuklendi mi?
+  ok(await pl.eval(`sanalMasa.voice.mic.advanced && sanalMasa.voice.mic.mode === "gtcrn"`), "AI noise suppression (GTCRN) active by default");
+  await pl.click$(`document.querySelector("#voiceBtn")`); // ayar penceresi
+  await pl.click$(`[...document.querySelectorAll(".mic-modes button")].find(b => b.textContent === "Hafif")`);
+  await sleep(1500);
+  ok((await pl.eval(`sanalMasa.voice.mic.mode`)) === "rnnoise", "switched to RNNoise (light) from settings panel");
+  await pl.click$(`[...document.querySelectorAll(".mic-modes button")].find(b => b.textContent === "Güçlü")`);
+  await sleep(1500);
+  await sleep(500);
   await pl.shot("10-sesli-sohbet.png");
+
+  // Suzgecsiz ve kapisiz: sahte mikrofonun bip sesi karsi tarafa ulasmali
+  await pl.click$(`[...document.querySelectorAll(".mic-modes button")].find(b => b.textContent === "Kapalı")`);
+  await pl.eval(`(() => { const c = [...document.querySelectorAll(".mic-switch input")][0]; if (c.checked) c.click(); })()`);
+  let heard = false;
+  for (let i = 0; i < 25 && !heard; i++) {
+    await sleep(200);
+    heard = await dm.eval(`!!document.querySelector('.pdot.speaking[data-pid="' + sanalMasa.state.players.find(p => p.name === "Ayla").id + '"]')`);
+  }
+  ok(heard, "audio from player reaches DM through the processing chain");
+
+  // Suzgecler calisiyor mu? Beyaz gurultuyu suzgecten gecirip seviyesini olc.
+  // (Model arka planda yuklenir: islemeyi basta durdurup yuklenmesini bekle.)
+  const levels = await pl.eval(`(async () => {
+    const lib = await import("/vendor/gurultu/index.js");
+    const level = async (kind) => {
+      const ctx = new OfflineAudioContext(1, 48000 * 3, 48000);
+      const buf = ctx.createBuffer(1, 48000 * 3, 48000);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.05;
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      let node = src;
+      if (kind === "rnnoise") {
+        const wasm = await lib.loadRnnoise({ url: "/vendor/gurultu/rnnoise.wasm", simdUrl: "/vendor/gurultu/rnnoise_simd.wasm" });
+        await ctx.audioWorklet.addModule("/vendor/gurultu/rnnoiseWorklet.js");
+        node = new lib.RnnoiseWorkletNode(ctx, { maxChannels: 1, wasmBinary: wasm }); src.connect(node);
+      } else if (kind === "gtcrn") {
+        const wasm = await lib.loadGtcrn({ url: "/vendor/gurultu/gtcrn.wasm" });
+        await ctx.audioWorklet.addModule("/vendor/gurultu/gtcrnWorklet.js");
+        node = new lib.GtcrnWorkletNode(ctx, { maxChannels: 1, wasmBinary: wasm }); src.connect(node);
+      }
+      node.connect(ctx.destination); src.start();
+      ctx.suspend(256 / 48000).then(async () => { await new Promise((r) => setTimeout(r, 1500)); ctx.resume(); });
+      const out = (await ctx.startRendering()).getChannelData(0).subarray(48000);
+      let sum = 0; for (const v of out) sum += v * v;
+      return Math.round(10 * Math.log10(sum / out.length + 1e-12));
+    };
+    return { raw: await level("off"), rnnoise: await level("rnnoise"), gtcrn: await level("gtcrn") };
+  })()`);
+  console.log("       beyaz gurultu seviyesi (dB):", JSON.stringify(levels));
+  ok(levels.rnnoise > -100, "RNNoise filter runs (output is not silence)");
+  ok(levels.raw - levels.gtcrn >= 20, `GTCRN removes white noise by ${levels.raw - levels.gtcrn} dB`);
 
   await dm.eval(`sanalMasa.send({ t: "scene.delete", id: ${S}.id })`);
   console.log("\n  Konsol hatalari:", consoleErrors.length ? consoleErrors : "yok");
